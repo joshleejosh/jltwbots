@@ -2,5 +2,8 @@
 *.py[cod]
 *.tmp
 
+floorisx_credentials.json
+jlj_ebooks_credentials.json
+
 .DS_Store
 
