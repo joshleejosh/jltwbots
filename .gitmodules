@@ -1,0 +1,12 @@
+[submodule "python-twitter"]
+	path = python-twitter
+	url = git@github.com:bear/python-twitter.git
+[submodule "requests-oauthlib"]
+	path = requests-oauthlib
+	url = git@github.com:requests/requests-oauthlib.git
+[submodule "requests"]
+	path = requests
+	url = git@github.com:kennethreitz/requests.git
+[submodule "oauthlib"]
+	path = oauthlib
+	url = git://github.com/idan/oauthlib.git
