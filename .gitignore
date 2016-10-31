@@ -1,10 +1,11 @@
 
 *.py[cod]
-*.tmp
 
 floorisx_credentials.json
 jlj_ebooks_credentials.json
 jlj_ebooks/joshleejosh_tweets.json
+floorisx/floorisx_shuffle.json
 
+*.tmp
 .DS_Store
 

@@ -1,0 +1,127 @@
+{
+    "_": "Begin with the \"*\" key, and replace any {} tokens you run into with the appropriate key, recursing where appropriate. If you encounter an array, choose randomly from its elements.",
+
+    "*": "The floor is {substance}! {command}!",
+
+    "command": [
+        "Jump {adverb?}to {desteither}",
+        "Jump {adverb?}onto {destsingular}",
+        "Jump {adverb?}up onto {destsingular}",
+        "Step {adverb?}onto {destsingular}",
+        "Step {adverb?}between {destplural}",
+        "Leap {adverb?}to {desteither}",
+        "Leap {adverb?}towards {desteither}",
+        "Dive {adverb?}towards {desteither}",
+        "Clamber {adverb?}onto {desteither}",
+        "Scramble {adverb?}onto {destsingular}",
+        "Dance {adverb?}on {desteither}",
+
+        "Balance {adverb?}on {desteither}",
+        "Balance {adverb?}upon {desteither}",
+        "Balance {adverb?}between {destplural}",
+        "Cleave {adverb?}to {desteither}",
+        "Cling {adverb?}to {desteither}",
+        "Stick {adverb?}to {desteither}",
+        "Hold {adverb?}on to {desteither}",
+        "Perch {adverb?}on {desteither}",
+        "Perch {adverb?}upon {desteither}",
+        "Pose {adverb?}on {desteither}",
+        "Pose {adverb?}upon {desteither}",
+        "Straddle {destplural}",
+        "Stand {adverb?}upon {desteither}",
+        "Stand {adverb?}on {desteither}"
+    ],
+
+    "adverb?": [
+        "{adverb} ",
+        ""
+    ],
+
+    "desteither": [
+        "{destsingular}",
+        "{destsingular}",
+        "{destsingular}",
+        "{destplural}"
+    ],
+    "destsingular": "{articlesingular} {furnituresingular}",
+    "destplural": "{articleplural} {furnitureplural}",
+
+    "articlesingular": [ "a", "the", "that", "this" ],
+    "articleplural": [ "the", "some", "those", "these" ],
+
+    "surface": [
+        "carpet",
+        "deck",
+        "ground",
+        "hardwood",
+        "lawn",
+        "parquet tiling",
+        "sidewalk",
+        "street",
+        "floor"
+    ],
+
+    "substance": [
+        "a bottomless pit",
+        "acid",
+        "boiling water",
+        "boogers",
+        "electricity",
+        "green slime",
+        "hot coffee",
+        "lasers",
+        "mutagenic ooze",
+        "piranhas",
+        "quicksand",
+        "radioactive waste",
+        "sharks",
+        "snakes",
+        "snot",
+        "spikes",
+        "spoiled milk",
+        "thumbtacks",
+        "lava"
+    ],
+
+    "adverb": [
+        "carefully",
+        "cautiously",
+        "confidently",
+        "delicately",
+        "fearfully",
+        "gingerly",
+        "gracefully",
+        "gracelessly",
+        "heedlessly",
+        "precariously",
+        "recklessly",
+        "steadily",
+        "unsteadily",
+        "with great trepidation",
+        "with precision",
+        "with reckless abandon"
+    ],
+
+    "furnituresingular": [
+        "bannister", "bar stool", "beanbag chair", "bed", "bench", "bookcase",
+        "bookshelf", "bunk bed", "cabinet", "chair", "chaise longue", "chest",
+        "coat rack", "coffee table", "couch", "cupboard", "davenport",
+        "daybed", "desk", "dining table", "divan", "dresser", "easy chair",
+        "end table", "entertainment center", "fainting couch",
+        "filing cabinet", "footstool", "futon", "hatstand", "kotatsu",
+        "love seat", "mantle", "mattress", "nightstand", "ottoman", "pedestal",
+        "pinball machine", "plant stand", "radiator", "recliner", "safe",
+        "sectional sofa", "shoe rack", "sideboard", "sofa", "sofa bed", "stool",
+        "table", "throw rug", "tuffet", "umbrella stand", "wardrobe",
+        "waterbed", "wine rack", "workbench"
+    ],
+
+    "furnitureplural": [
+        "bookshelves",
+        "chairs",
+        "end tables",
+        "throw pillows",
+        "cushions"
+    ]
+
+}
