@@ -44,6 +44,7 @@ def load_blacklist():
 def split_tweets(tweets):
     rv = defaultdict(int)
     for tweet in tweets:
+        #print '------- %s %s'%(tweet.id, tweet.user.screen_name)
         #print tweet.text.encode('utf-8')
         a = tweet.text.split()
         for word in a:
@@ -93,7 +94,7 @@ def mushymushmush(tweets, trend):
             del filtered[i:]
             break
         tlen += 1 + len(word.encode('utf-8'))
-    random.shuffle(filtered)
+    #random.shuffle(filtered)
     rv = preamble + ' '.join(filtered)
     return rv
 
