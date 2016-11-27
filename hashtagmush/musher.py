@@ -37,18 +37,26 @@ def is_stopchar(c):
     return True
 
 def is_stopword(w):
+    w = w.upper()
     if w == 'RT':
         return True
     if w.startswith('@'):
         return True
     if w.startswith('.@'):
         return True
-    if w.startswith('http'):
+    if w.startswith('HTTP'):
         return True
-    if w.upper() in stopwords:
+    if w in stopwords:
         return True
-    if w.upper() in blacklist:
+    if w in blacklist:
         return True
+    # deal with smart apostrophes
+    if w.find(unichr(8217)) != -1:
+        x = w.replace(unichr(8217), "'")
+        if x in stopwords:
+            return True
+        if x in blacklist:
+            return True
     return False
 
 def is_stopword2(word, trend, location):
@@ -77,8 +85,6 @@ def caseify(word):
 def split_tweets(tweets, trend, location):
     rv = defaultdict(int)
     for tweet in tweets:
-        #print '------- %s %s'%(tweet.id, tweet.user.screen_name)
-        #print tweet.text.encode('utf-8')
         a = tweet.text.split()
         for word in a:
             while word and is_stopchar(word[0]):

@@ -13,6 +13,7 @@ def build_sample(api, trend, samples, sampwait):
         tweets = api.GetSearch(trend, count=200)
         print trend.encode('utf-8'), len(tweets), datetime.datetime.now()
         for tweet in tweets:
+            #print tweet.text.encode('utf-8')
             if tweet.retweeted_status:
                 rv[tweet.retweeted_status.id] = tweet.retweeted_status
             else:
@@ -34,6 +35,9 @@ def main(args):
     if not woe or not woeid:
         woe = locator.pick_woeid(api)
         woeid = woe['woeid']
+    if not woe or not woeid:
+        print 'FAILURE: No locations to search for'
+        return
 
     trend = args.hashtag
     if not trend:
