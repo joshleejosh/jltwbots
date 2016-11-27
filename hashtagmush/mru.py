@@ -1,7 +1,7 @@
 import os.path, codecs
 from collections import defaultdict
 
-MRU_LEN = 20
+MRU_LEN = 48
 WDIR = os.path.dirname(os.path.realpath(__file__))
 mrus = defaultdict(list)
 
