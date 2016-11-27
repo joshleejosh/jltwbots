@@ -1,44 +1,9 @@
 # Find the top trending topic, query it, and spew out common words.
 
-import argparse, os.path, random, re, unicodedata, time, datetime
+import argparse, time, datetime
 from collections import defaultdict
 import jltw
-import musher, htmarkov
-
-WDIR = os.path.dirname(os.path.realpath(__file__))
-MRU_LEN = 10
-WOEID = 23424977 #USA
-mru = []
-
-def load_file(fn):
-    fp = open(os.path.join(WDIR, fn))
-    a = fp.read().split('\n')
-    fp.close()
-    return a
-def load_mru():
-    global mru
-    mru.extend(load_file('mru'))
-
-def save_mru(newword):
-    if newword in mru:
-        return
-    if len(mru) > MRU_LEN:
-        del mru[0]
-    mru.append(newword)
-    fp = open(os.path.join(WDIR, 'mru'), 'w')
-    fp.write('\n'.join(mru))
-    fp.close()
-
-def find_trend(api):
-    rv = []
-    trends = api.GetTrendsWoeid(WOEID)
-    for t in trends:
-        if t.name.startswith('#') and t.name not in mru:
-            rv.append(t.name)
-    if len(rv) == 0:
-        print 'ERROR: no trends!'
-        return ''
-    return random.choice(rv)
+import mru, locator, trendor, musher, htmarkov
 
 def build_sample(api, trend, samples, sampwait):
     if not trend:
@@ -57,19 +22,60 @@ def build_sample(api, trend, samples, sampwait):
     print 'Total unique tweets: %d'%len(rv)
     return rv.values()
 
-def main():
+def main(args):
+    trendor.load_trend_mru()
+    locator.load_location_mru()
+    api = jltw.open_twitter(args.authfile)
+
+    woe = None
+    woeid = args.woeid
+    if woeid:
+        woe = locator.find_woe(api, woeid)
+    if not woe or not woeid:
+        woe = locator.pick_woeid(api)
+        woeid = woe['woeid']
+
+    trend = args.hashtag
+    if not trend:
+        trend = trendor.find_trend(api, woeid)
+    if not trend:
+        print 'FAILURE: No trendng topics to search for'
+        return
+
+    musher.musher_init()
+    tweets = build_sample(api, trend, args.num_samples, args.sample_wait)
+    if len(tweets) > 0:
+        #text = musher.mushymushmush(tweets, trend)
+        text = musher.secret_history(tweets, trend, woe['name'])
+        #text = htmarkov.spew(tweets, trend)
+        if text:
+            if args.tweet:
+                api.PostUpdate(text)
+            print text.encode('utf-8')
+            trendor.save_trend_mru(trend)
+            locator.save_location_mru(woeid)
+    else:
+        print 'FAILURE: No tweets for trend [%s]'%trend
+
+if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('authfile',
             type=str,
             help='File containing Twitter credentials')
-    parser.add_argument('hashtag',
-            nargs='?',
-            type=str,
-            help='Topic to search for (instead of querying trends)')
     parser.add_argument('-t', '--tweet',
             action='store_true',
             dest='tweet',
             help='Post the result to twitter.')
+    parser.add_argument('-w', '--woeid',
+            action='store',
+            dest='woeid',
+            type=str,
+            help='WOEID of location to search in (instead of querying)')
+    parser.add_argument('-ht', '--hashtag',
+            action='store',
+            dest='hashtag',
+            type=str,
+            help='Topic to search for (instead of querying trends)')
     parser.add_argument('-sn', '--num-samples',
             action='store',
             dest='num_samples',
@@ -83,29 +89,5 @@ def main():
             default=60,
             help='Time between sample queries')
     args = parser.parse_args()
-
-    load_mru()
-    api = jltw.open_twitter(args.authfile)
-
-    trend = args.hashtag
-    if not trend:
-        trend = find_trend(api)
-    if not trend:
-        print 'FAILURE: No trendng topics to search for'
-        return
-
-    tweets = build_sample(api, trend, args.num_samples, args.sample_wait)
-    if len(tweets) > 0:
-        text = musher.mushymushmush(tweets, trend)
-        #text = htmarkov.spew(tweets, trend)
-        if text:
-            if args.tweet:
-                api.PostUpdate(text)
-            print text.encode('utf-8')
-            save_mru(trend)
-    else:
-        print 'FAILURE: No tweets for trend [%s]'%trend
-
-if __name__ == '__main__':
-    main()
+    main(args)
 
