@@ -1,6 +1,8 @@
 
 *.py[cod]
 
+botenv
+
 floorisx_credentials.json
 jlj_ebooks_credentials.json
 hashtagmush_credentials.json

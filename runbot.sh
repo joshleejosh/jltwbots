@@ -5,7 +5,5 @@
 # Make sure we're in the correct directory in case there are any relative paths involved.
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd ${DIR}
-
-export PYTHONPATH=${PYTHONPATH}:${DIR}/requests:${DIR}/oauthlib:${DIR}/requests-oauthlib:${DIR}/python-twitter
-python $*
+botenv/bin/python $*
 

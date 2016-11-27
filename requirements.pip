@@ -1,0 +1,5 @@
+python-twitter
+oauthlib
+requests
+requests-oauthlib
+nltk
