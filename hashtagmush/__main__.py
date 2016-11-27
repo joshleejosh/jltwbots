@@ -27,13 +27,17 @@ def main(args):
     trendor.load_trend_mru()
     locator.load_location_mru()
     api = jltw.open_twitter(args.authfile)
+    print api.VerifyCredentials().screen_name
+    time.sleep(1)
 
     woe = None
     woeid = args.woeid
     if woeid:
         woe = locator.find_woe(api, woeid)
+        time.sleep(1)
     if not woe or not woeid:
         woe = locator.pick_woeid(api)
+        time.sleep(1)
         woeid = woe['woeid']
     if not woe or not woeid:
         print 'FAILURE: No locations to search for'
@@ -42,12 +46,14 @@ def main(args):
     trend = args.hashtag
     if not trend:
         trend = trendor.find_trend(api, woeid)
+        time.sleep(1)
     if not trend:
         print 'FAILURE: No trendng topics to search for'
         return
 
     musher.musher_init()
     tweets = build_sample(api, trend, args.num_samples, args.sample_wait)
+    time.sleep(1)
     if len(tweets) > 0:
         #text = musher.mushymushmush(tweets, trend)
         text = musher.secret_history(tweets, trend, woe['name'])
