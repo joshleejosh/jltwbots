@@ -12,6 +12,15 @@ DEFAULT_WOE = {
         u'woeid': 23424977
         }
 
+MOSTLY_ENGLISH_SPEAKING = (
+        23424748, # Australia
+        23424775, # Canada
+        23424803, # Ireland
+        23424916, # New Zealand
+        23424975, # United Kingdom
+        23424977, # United States
+        )
+
 WOEIDS={}
 
 location_mru = []
@@ -39,14 +48,14 @@ def pick_woeid(api):
     woes = read_woes(api)
     candidates = []
     for woe in woes:
-        if woe['parentid'] == WOEID_US and woe['placeType']['code'] == 7 and woe['woeid'] not in location_mru:
+        if woe['parentid'] in MOSTLY_ENGLISH_SPEAKING and woe['woeid'] not in location_mru:
             candidates.append(woe)
     if not candidates:
         return DEFAULT_WOE
     rv = random.choice(candidates)
     print rv['name'], rv['woeid']
     return rv
-    
+
 def dump_woeids(api):
     woes = read_woes(api)
     for woe in woes:
