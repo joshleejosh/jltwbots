@@ -9,7 +9,7 @@ hashtagmush_credentials.json
 
 jlj_ebooks/joshleejosh_tweets.json
 floorisx/floorisx_shuffle.json
-hashtagmush/mru
+hashtagmush/*_mru
 
 *.tmp
 .DS_Store
