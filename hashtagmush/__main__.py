@@ -1,6 +1,6 @@
 # Find the top trending topic, query it, and spew out common words.
 
-import argparse, time, datetime
+import argparse, time, datetime, urllib
 from collections import defaultdict
 import jltw
 import mru, locator, trendor, musher, htmarkov
@@ -10,8 +10,10 @@ def build_sample(api, trend, samples, sampwait):
         return tuple()
     rv = {}
     for i in xrange(samples):
-        tweets = api.GetSearch(trend, count=200)
-        print trend.encode('utf-8'), len(tweets), datetime.datetime.now()
+        te = trend.encode('utf-8')
+        query = urllib.quote(te)
+        tweets = api.GetSearch(query, count=200)
+        print te, len(tweets), datetime.datetime.now()
         for tweet in tweets:
             #print tweet.text.encode('utf-8')
             if tweet.retweeted_status:
@@ -44,7 +46,9 @@ def main(args):
         return
 
     trend = args.hashtag
-    if not trend:
+    if trend:
+        trend = trend.decode('utf-8')
+    else:
         trend = trendor.find_trend(api, woeid)
         time.sleep(1)
     if not trend:

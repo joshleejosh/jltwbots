@@ -29,8 +29,9 @@ def save_mru(n, newid):
     if len(mrus[n]) > MRU_LEN:
         del mrus[n][0]
     mrus[n].append(newid)
+    us = '\n'.join((unicode(i) for i in mrus[n]))
     fn = os.path.join(WDIR, n)
     fp = codecs.open(fn, 'w', encoding='utf-8')
-    fp.write('\n'.join((str(i) for i in mrus[n])))
+    fp.write(us)
     fp.close()
 
