@@ -9,20 +9,30 @@ NONSTOPCHARS = '#%$_'
 stopwords = []
 blacklist = []
 
+import nltk
+nltk.data.path.insert(0, os.path.join(WDIR, '..', 'botenv', 'nltk_data'))
+
+# ####################################################### #
+
 def musher_init():
     load_stopwords()
     load_blacklist()
+
 def load_file(fn):
     fp = codecs.open(os.path.join(WDIR, fn), encoding='utf-8')
     a = fp.read().split('\n')
     fp.close()
     return a
+
 def load_stopwords():
     global stopwords
     stopwords.extend(load_file('stopwords'))
+
 def load_blacklist():
     global blacklist
     blacklist.extend(load_file('blacklist'))
+
+# ####################################################### #
 
 def is_stopchar(c):
     cat = unicodedata.category(c)
@@ -82,6 +92,21 @@ def caseify(word):
     else:
         return word
 
+def listify(a):
+    a = list(caseify(i) for i in a)
+    rv = ''
+    if len(a) == 1:
+        rv = '%s'%a[0]
+    elif len(a) == 2:
+        rv = '%s and %s'%(a[0], a[1])
+    else:
+        for i in xrange(len(a)-1):
+            rv += '%s, '%a[i]
+        rv += 'and %s'%a[-1]
+    return rv
+
+# ####################################################### #
+
 def split_tweets(tweets, trend, location):
     rv = defaultdict(int)
     for tweet in tweets:
@@ -99,22 +124,20 @@ def split_tweets(tweets, trend, location):
                 rv[word] += 1
     return rv
 
-def make_buckets(words, trend):
+def collate_word_counts(words, trend):
     rv = defaultdict(list)
     for word,count in words.iteritems():
         if count < MIN_TWEETS:
             continue
-        if word.upper() == trend.upper():
-            continue
         rv[count].append(word)
     for c in sorted(rv.keys()):
         rv[c].sort()
-        s = ' '.join(rv[c]).encode('utf-8')
-        print '%d: %s'%(c, s)
+        s = ' '.join(rv[c])
+        print '%d: %s'%(c, s.encode('utf-8'))
     return rv
 
-# turn dict of words into an array sorted by reverse length; words of equal length bucket are randomly shuffled.
-def sort_buckets(buckets):
+# turn dict of words into an array sorted by length descending.
+def filter_buckets(buckets):
     rv = []
     for c in reversed(sorted(buckets.keys())):
         random.shuffle(buckets[c])
@@ -152,13 +175,15 @@ def sort_buckets(buckets):
 
     return rv
 
+# ####################################################### #
+
 # Just pull out as many keywords as we can fit into a tweet.
 def mushymushmush(tweets, trend):
     words = split_tweets(tweets, trend, 'America')
-    buckets = make_buckets(words, trend)
+    buckets = collate_word_counts(words, trend)
     preamble = u'%s: '%trend
     tlen = len(preamble)
-    filtered = sort_buckets(buckets)
+    filtered = filter_buckets(buckets)
     for i,word in enumerate(filtered):
         if tlen + 1 + len(word.encode('utf-8')) > 140:
             del filtered[i:]
@@ -168,39 +193,48 @@ def mushymushmush(tweets, trend):
     rv = preamble + ' '.join(filtered)
     return rv
 
-def listify(a):
-    rv = ''
-    if len(a) == 1:
-        rv = '%s'%a[0]
-    elif len(a) == 2:
-        rv = '%s and %s'%(a[0], a[1])
-    else:
-        for i in xrange(len(a)-1):
-            rv += '%s, '%caseify(a[i])
-        rv += 'and %s'%caseify(a[-1])
-    return rv
-
 # Generate the title of my next book.
 def secret_history(tweets, trend, location):
     words = split_tweets(tweets, trend, location)
-    buckets = make_buckets(words, trend)
-    filtered = sort_buckets(buckets)
-    #print len(filtered), filtered
+    buckets = collate_word_counts(words, trend)
+    filtered = filter_buckets(buckets)
+    #print len(filtered), joinlist(filtered)
+
+    quality = 'Secret'
+    """
+    adjs = []
+    wt = nltk.word_tokenize(' '.join(filtered))
+    tagged = nltk.pos_tag(wt)
+    for pair in tagged:
+        if pair[1].startswith('JJ'):
+            adjs.append(pair[0])
+    if adjs:
+        print 'Adjectives: %s'%', '.join(adjs).encode('utf-8')
+        quality = caseify(adjs[0])
+        for i,word in enumerate(filtered):
+            if word.upper() == quality.upper():
+                del filtered[i]
+                break
+    """
 
     # Don't just take the first 3, since they may be parts of a phrase.
-    # Take the top 33%, shuffle *those*, then pick 3.
-    n = max(len(filtered)/3, NUM_TOPICS)
+    # Take the top howevermany, shuffle *those*, then pick 3.
+    n = min(len(filtered)/2, NUM_TOPICS*3)
     candidates = filtered[0:n]
+    print len(candidates), ', '.join(candidates).encode('utf-8')
     random.shuffle(candidates)
     topics = candidates[0:NUM_TOPICS]
     ts = listify(topics)
-    rv = u'The Secret History of %s: %s in %s'%(trend, ts, location)
+
+    rv = u'The %s History of %s: %s in %s'%(quality, trend, ts, location)
+    #rv = u'%s: A Secret History of %s: %s'%(trend, location, ts)
     return rv
 
 if __name__ == '__main__':
-    print listify(['Foo'])
-    print listify(['Foo','Bar'])
-    print listify(['Foo','Bar','Baz'])
-    print listify(['Foo','Bar','Baz','Qux'])
-    print listify(['Foo','Bar','Baz','Qux','Guh'])
+    print listify(['foo'])
+    print listify(['foo','Bar'])
+    print listify(['foo','Bar','BAZ'])
+    print listify(['foo','Bar','BAZ','qUx'])
+    print listify(['foo','Bar','BAZ','qUx','guh'])
+    print listify(['foo','Bar','BAZ','qUx','guh','hmm'])
 
