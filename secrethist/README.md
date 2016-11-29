@@ -5,12 +5,15 @@ This bot does the following:
 - Searches tweets and pulls out keywords;
 - Assembles the title of a bestselling history book.
 
-> The Secret History of #TravelForGood in Pittsburgh: World, Children, and Help
-> The Secret History of Lawrence in Washington: Chris, TrippyMorrison, and Pratt
-> The Secret History of Alexander-Arnold in Swansea: Leeds, Origi, and Ben
-> The Secret History of #FairCity in Galway: Rocco, Jane, and Oisin
-> The Secret History of #HULNEW in Glasgow: Diame, 0-1, and Newcastle
-> The Secret History of #DefineAboriginal in Sydney: Health, Culture, and Hanson
+Some example tweets:
+```
+The Secret History of #TravelForGood in Pittsburgh: World, Children, and Help
+The Secret History of Lawrence in Washington: Chris, TrippyMorrison, and Pratt
+The Secret History of Alexander-Arnold in Swansea: Leeds, Origi, and Ben
+The Secret History of #FairCity in Galway: Rocco, Jane, and Oisin
+The Secret History of #HULNEW in Glasgow: Diame, 0-1, and Newcastle
+The Secret History of #DefineAboriginal in Sydney: Health, Culture, and Hanson
+```
 
 ----
 
