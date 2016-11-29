@@ -145,7 +145,7 @@ def filter_buckets(buckets):
         subbucketb = []
         for w in buckets[c]:
             if mru.in_mru('topics_mru', w):
-                print 'topic conflict: %s'%w
+                #print 'stale topic: %s'%w
                 continue
             if w[0].islower():
                 subbucketb.append(w)
@@ -197,6 +197,8 @@ def mushymushmush(tweets, trend):
 
 # Generate the title of my next book.
 def secret_history(tweets, trend, location):
+    musher_init()
+
     words = split_tweets(tweets, trend, location)
     buckets = collate_word_counts(words, trend)
     filtered = filter_buckets(buckets)
