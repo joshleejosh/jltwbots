@@ -13,11 +13,11 @@ def find_trend(api, woeid=1):
     trends = api.GetTrendsWoeid(woeid)
     for t in trends:
         #if t.name.startswith('#') and t.name not in trend_mru:
-        if t.name not in trend_mru:
+        if not mru.in_mru('trend_mru', t.name):
             rv.append(t.name)
     if len(rv) == 0:
         print 'ERROR: no trends!'
         return ''
-    print 'Trends: %s'%', '.join(rv).encode('utf-8')
+    print '%d Trends: %s'%(len(rv), ', '.join(rv).encode('utf-8'))
     return random.choice(rv)
 

@@ -48,7 +48,7 @@ def pick_woeid(api):
     woes = read_woes(api)
     candidates = []
     for woe in woes:
-        if woe['parentid'] in MOSTLY_ENGLISH_SPEAKING and woe['woeid'] not in location_mru:
+        if woe['parentid'] in MOSTLY_ENGLISH_SPEAKING and not mru.in_mru('location_mru', woe['woeid']):
             candidates.append(woe)
     if not candidates:
         return DEFAULT_WOE
