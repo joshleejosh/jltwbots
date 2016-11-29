@@ -5,11 +5,11 @@ botenv
 
 floorisx_credentials.json
 jlj_ebooks_credentials.json
-hashtagmush_credentials.json
+secrethist_credentials.json
 
 jlj_ebooks/joshleejosh_tweets.json
 floorisx/floorisx_shuffle.json
-hashtagmush/*_mru
+secrethist/*_mru
 
 *.tmp
 .DS_Store
