@@ -52,6 +52,7 @@ def pick_woeid(api):
             candidates.append(woe)
     if not candidates:
         return DEFAULT_WOE
+    #print ' '.join((i['name'] for i in candidates)).encode('utf-8')
     rv = random.choice(candidates)
     print rv['name'], rv['woeid']
     return rv

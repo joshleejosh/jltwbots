@@ -9,9 +9,6 @@ NONSTOPCHARS = '#%$_'
 stopwords = []
 blacklist = []
 
-import nltk
-nltk.data.path.insert(0, os.path.join(WDIR, '..', 'botenv', 'nltk_data'))
-
 # ####################################################### #
 
 def musher_init():
@@ -198,35 +195,22 @@ def secret_history(tweets, trend, location):
     words = split_tweets(tweets, trend, location)
     buckets = collate_word_counts(words, trend)
     filtered = filter_buckets(buckets)
-    #print len(filtered), joinlist(filtered)
+    #print len(filtered), ' '.join(filtered).encode('utf-8')
 
     quality = 'Secret'
-    """
-    adjs = []
-    wt = nltk.word_tokenize(' '.join(filtered))
-    tagged = nltk.pos_tag(wt)
-    for pair in tagged:
-        if pair[1].startswith('JJ'):
-            adjs.append(pair[0])
-    if adjs:
-        print 'Adjectives: %s'%', '.join(adjs).encode('utf-8')
-        quality = caseify(adjs[0])
-        for i,word in enumerate(filtered):
-            if word.upper() == quality.upper():
-                del filtered[i]
-                break
-    """
 
     # Don't just take the first 3, since they may be parts of a phrase.
     # Take the top howevermany, shuffle *those*, then pick 3.
     n = min(len(filtered)/2, NUM_TOPICS*3)
     candidates = filtered[0:n]
+
     print len(candidates), ', '.join(candidates).encode('utf-8')
     random.shuffle(candidates)
     topics = candidates[0:NUM_TOPICS]
     ts = listify(topics)
 
-    rv = u'The %s History of %s: %s in %s'%(quality, trend, ts, location)
+    rv = u'The %s History of %s in %s: %s'%(quality, trend, location, ts)
+    #rv = u'The %s History of %s: %s in %s'%(quality, trend, ts, location)
     #rv = u'%s: A Secret History of %s: %s'%(trend, location, ts)
     return rv
 
