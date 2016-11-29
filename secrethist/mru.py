@@ -25,7 +25,7 @@ class MRU:
 mrus = defaultdict(MRU)
 
 def load_mru(n):
-    fn = os.path.join(WDIR, n)
+    fn = os.path.join(WDIR, n+'.mru')
     if os.path.exists(fn):
         fp = codecs.open(fn, encoding='utf-8')
         a = fp.read().split('\n')
@@ -66,7 +66,7 @@ def save_mru(n, newid=None):
         m.add(newid)
     us = '\n'.join((unicode(i) for i in m.values))
 
-    fn = os.path.join(WDIR, n)
+    fn = os.path.join(WDIR, n+'.mru')
     fp = codecs.open(fn, 'w', encoding='utf-8')
     fp.write(MRULENTAG)
     fp.write(unicode(m.length))

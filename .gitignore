@@ -9,7 +9,7 @@ secrethist_credentials.json
 
 jlj_ebooks/joshleejosh_tweets.json
 floorisx/floorisx_shuffle.json
-secrethist/*_mru
+secrethist/*.mru
 
 *.tmp
 .DS_Store

@@ -1,6 +1,7 @@
 import random, time
 import mru
 
+MRU = 'locations'
 WOEID_US = 23424977
 DEFAULT_WOE = {
         u'country': u'United States',
@@ -26,9 +27,9 @@ WOEIDS={}
 location_mru = []
 def load_location_mru():
     global location_mru
-    location_mru = mru.load_mru('location_mru')
+    location_mru = mru.load_mru(MRU)
 def save_location_mru(newid):
-    mru.save_mru('location_mru', newid)
+    mru.save_mru(MRU, newid)
 
 def _read_woes(api):
     url = '%s/trends/available.json' % (api.base_url)
@@ -49,7 +50,7 @@ def find_woes(api):
     woes = _read_woes(api)
     rv = []
     for woe in woes:
-        if woe['parentid'] in MOSTLY_ENGLISH_SPEAKING and not mru.in_mru('location_mru', woe['woeid']):
+        if woe['parentid'] in MOSTLY_ENGLISH_SPEAKING and not mru.in_mru(MRU, woe['woeid']):
             rv.append(woe)
     if not rv:
         rv.append(DEFAULT_WOE)

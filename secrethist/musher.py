@@ -2,6 +2,7 @@ import os.path, random, unicodedata, codecs
 from collections import defaultdict
 import mru
 
+MRU = 'topics'
 WDIR = os.path.dirname(os.path.realpath(__file__))
 NUM_TOPICS = 3
 MIN_TWEETS = 2
@@ -15,7 +16,7 @@ blacklist = []
 def musher_init():
     load_stopwords()
     load_blacklist()
-    mru.load_mru('topics_mru')
+    mru.load_mru(MRU)
 
 def load_file(fn):
     fp = codecs.open(os.path.join(WDIR, fn), encoding='utf-8')
@@ -144,7 +145,7 @@ def filter_buckets(buckets):
         subbucketa = []
         subbucketb = []
         for w in buckets[c]:
-            if mru.in_mru('topics_mru', w):
+            if mru.in_mru(MRU, w):
                 #print 'stale topic: %s'%w
                 continue
             if w[0].islower():
@@ -216,8 +217,8 @@ def secret_history(tweets, trend, location):
     topics = candidates[0:NUM_TOPICS]
     ts = listify(topics)
     for t in topics:
-        mru.add_mru('topics_mru', t)
-    mru.save_mru('topics_mru')
+        mru.add_mru(MRU, t)
+    mru.save_mru(MRU)
 
     rv = u'The %s History of %s in %s: %s'%(quality, trend, location, ts)
     #rv = u'The %s History of %s: %s in %s'%(quality, trend, ts, location)
