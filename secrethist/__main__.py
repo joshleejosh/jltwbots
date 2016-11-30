@@ -60,14 +60,15 @@ def find_params(api, trend=None, woeid=None):
     if not woeTrends:
         return woe, trend
     for w,a in woeTrends.iteritems():
-        #print '%d: %d local trends'%(w, len(a))
-        print '%d: %d local trends: %s'%(w, len(a), '; '.join(a[0:NUM_SAMPLE_TRENDS]).encode('utf-8'))
+        print '%d: %d local trends'%(w, len(a))
 
     # Don't just pick the woe with the most unique trends: that will bias
     # towards non-US cities: US cities are far more common in the candidate
     # pool, and a lot of cities from a single country will have more conflicts.
     # Instead, randomly pick from woes with more than 1 hit.
-    woeid = random.choice(list(w for w in woeTrends.keys() if len(woeTrends[w])>1))
+    a = list(w for w in woeTrends.keys() if len(woeTrends[w])>1)
+    if a:
+        woeid = random.choice(a)
     if not woeid:
         woeid = random.choice(woeTrends.keys())
 
@@ -77,7 +78,7 @@ def find_params(api, trend=None, woeid=None):
     c = len(trends)
     random.shuffle(trends)
     del trends[NUM_SAMPLE_TRENDS:]
-    print '%d/%d: %s'%(len(trends), c, '; '.join(trends).encode('utf-8'))
+    print '%s/%d: %d/%d: %s'%(woe['name'], woeid, len(trends), c, '; '.join(trends).encode('utf-8'))
 
     # Count tweets for each trend; pick the trend with the most tweets
     trendCounts = {}
