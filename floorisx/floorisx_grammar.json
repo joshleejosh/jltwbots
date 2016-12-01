@@ -1,39 +1,37 @@
 {
-    "_": "Begin with the \"*\" key, and replace any {} tokens you run into with the appropriate key, recursing where appropriate. If you encounter an array, choose randomly from its elements.",
-
-    "*": "The floor is {substance}! {command}!",
+    "*": "The {surface} is {substance}! {Command}!",
 
     "command": [
-        "Jump {adverb?}to {desteither}",
-        "Jump {adverb?}onto {destsingular}",
-        "Jump {adverb?}up onto {destsingular}",
-        "Step {adverb?}onto {destsingular}",
-        "Step {adverb?}between {destplural}",
-        "Leap {adverb?}to {desteither}",
-        "Leap {adverb?}towards {desteither}",
-        "Dive {adverb?}towards {desteither}",
-        "Clamber {adverb?}onto {desteither}",
-        "Scramble {adverb?}onto {destsingular}",
-        "Dance {adverb?}on {desteither}",
+        "jump {adverb?} to {desteither}",
+        "jump {adverb?} onto {destsingular}",
+        "jump {adverb?} up onto {destsingular}",
+        "step {adverb?} onto {destsingular}",
+        "step {adverb?} between {destplural}",
+        "leap {adverb?} to {desteither}",
+        "leap {adverb?} towards {desteither}",
+        "dive {adverb?} towards {desteither}",
+        "clamber {adverb?} onto {desteither}",
+        "scramble {adverb?} onto {destsingular}",
+        "dance {adverb?} on {desteither}",
 
-        "Balance {adverb?}on {desteither}",
-        "Balance {adverb?}upon {desteither}",
-        "Balance {adverb?}between {destplural}",
-        "Cleave {adverb?}to {desteither}",
-        "Cling {adverb?}to {desteither}",
-        "Stick {adverb?}to {desteither}",
-        "Hold {adverb?}on to {desteither}",
-        "Perch {adverb?}on {desteither}",
-        "Perch {adverb?}upon {desteither}",
-        "Pose {adverb?}on {desteither}",
-        "Pose {adverb?}upon {desteither}",
-        "Straddle {destplural}",
-        "Stand {adverb?}upon {desteither}",
-        "Stand {adverb?}on {desteither}"
+        "balance {adverb?} on {desteither}",
+        "balance {adverb?} upon {desteither}",
+        "balance {adverb?} between {destplural}",
+        "cleave {adverb?} to {desteither}",
+        "cling {adverb?} to {desteither}",
+        "stick {adverb?} to {desteither}",
+        "hold {adverb?} on to {desteither}",
+        "perch {adverb?} on {desteither}",
+        "perch {adverb?} upon {desteither}",
+        "pose {adverb?} on {desteither}",
+        "pose {adverb?} upon {desteither}",
+        "straddle {destplural}",
+        "stand {adverb?} upon {desteither}",
+        "stand {adverb?} on {desteither}"
     ],
 
     "adverb?": [
-        "{adverb} ",
+        "{adverb}",
         ""
     ],
 
@@ -46,10 +44,11 @@
     "destsingular": "{articlesingular} {furnituresingular}",
     "destplural": "{articleplural} {furnitureplural}",
 
-    "articlesingular": [ "a", "the", "that", "this" ],
+    "articlesingular": [ "{aan}", "the", "that", "this" ],
     "articleplural": [ "the", "some", "those", "these" ],
 
-    "surface": [
+    "surface": "floor",
+    "XXXsurface": [
         "carpet",
         "deck",
         "ground",
