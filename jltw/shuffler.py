@@ -4,10 +4,10 @@
 # TODO: this is only using single chrs from 'A' up to represent options, so it
 # will crap out on arrays of more than 61 items (give or take).
 
-import os.path, json, random, re
+import os.path, json, random, re, codecs, io
 
 class Shuffler:
-    CHROFFSET = 'A'
+    CHROFFSET = ord('A')
 
     def __init__(self):
         self.filename = ''
@@ -16,8 +16,12 @@ class Shuffler:
     def load(self, fn):
         self.filename = fn
         if os.path.exists(self.filename):
-            fp = open(self.filename)
-            self.state = json.load(fp)
+            fp = io.open(self.filename, encoding='utf-8')
+            try:
+                self.state = json.load(fp)
+            except Exception as e:
+                print e
+                pass
             fp.close()
 
     def save(self, fn=None):
@@ -25,10 +29,8 @@ class Shuffler:
             self.filename = fn
         if not self.filename:
             return
-        s = json.dumps(self.state, indent=1)
-        fp = open(self.filename, 'w')
-        fp.write(s)
-        fp.close()
+        with codecs.open(self.filename, 'w', encoding='utf-8') as fp:
+            json.dump(self.state, fp, ensure_ascii=False, indent=1)
 
     def choice(self, k, a):
         # load or reload this key into state
@@ -38,20 +40,20 @@ class Shuffler:
             #print 'reload %s'%k
             sa = []
             for i in xrange(len(a)):
-                sa.append(chr(ord(self.CHROFFSET) + i))
+                sa.append(unichr(self.CHROFFSET + i))
             random.shuffle(sa)
             self.state[k] = ''.join(sa)
 
         # pick off the first element from this key's shuffled array
-        c = ''
+        c = u''
         if self.state.has_key(k) and self.state[k]:
             c = self.state[k][0]
             self.state[k] = self.state[k][1:]
 
         # translate the letter into an array index, then to a value
-        rv = ''
+        rv = u''
         if c:
-            i = ord(c) - ord(self.CHROFFSET)
+            i = ord(c) - self.CHROFFSET
             if i < len(a):
                 rv = a[i]
             else:
