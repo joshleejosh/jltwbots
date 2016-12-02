@@ -1,5 +1,7 @@
 # encoding: utf-8
 """
+GRAMMARIZER – Why isn't this just Tracery?
+
 Begin with the "*" key, and replace any {whatever} tokens you run into with the
 appropriate value, recursing where appropriate.
 
@@ -16,10 +18,18 @@ string will be left alone, whatever its case is.)
 {aan} is a magic key that will be replaced with "A" or "AN", depending on the
 next word. This can be disabled by setting the doAAnReplacement property to
 False.
+
+If the '*fix' key is present and is a list of keys, and those keys are lists,
+the lists will be picked from and fixed to a single value BEFORE the grammar is
+run. This results in values that are randomized between runs but consistent
+within a run.
+
 """
 
-import random, re
+import random, re, copy
 
+KEY_ROOT = "*"
+KEY_FIXEDVAL = "*fix"
 RE_TOKEN = re.compile(r'{([^}]*)}')
 RE_AAN = re.compile(r'{aan}', re.I)
 
@@ -28,17 +38,32 @@ class Grammarizer(object):
     def __init__(self, g, s):
         if not g:
             g = {'*':''}
-        self.grammar = g
+        self.set_grammar(g)
         self.shuffler = s
         self.doAAnReplacement = True
 
+    def set_grammar(self, g):
+        self.grammar = g
         # make sure all keys in the grammar are lowercase.
         for k,v in self.grammar.iteritems():
             del self.grammar[k]
             self.grammar[k.lower()] = v
+        self.originalGrammar = copy.deepcopy(self.grammar)
 
     def generate(self):
-        rv = self.replace_tokens('*', self.grammar['*'])
+        # reset
+        self.grammar = copy.deepcopy(self.originalGrammar)
+
+        # handle pre-substituted values
+        if self.grammar.has_key(KEY_FIXEDVAL):
+            for k in self.grammar[KEY_FIXEDVAL]:
+                k = k.lower()
+                if self.grammar.has_key(k):
+                    a = self.grammar[k]
+                    if hasattr(a, '__iter__'):
+                        self.grammar[k] = self.replace_tokens(k, a)
+
+        rv = self.replace_tokens(KEY_ROOT, self.grammar[KEY_ROOT])
         if self.doAAnReplacement:
             rv = self.replace_aan(rv)
         return rv
@@ -130,11 +155,12 @@ class Grammarizer(object):
 def main(gfn, sfn, n):
     sh = shuffler.Shuffler()
     grammar = {
-        '*': '{Aan} {subject} {verb} {aan} {ADJECTIVE} {OBject}{punctuation}',
+        '*fix': [ 'sUbJeCt', 'verb' ],
+        '*': '{Aan} {subject} {verb} {aan} {ADJECTIVE} {OBject}{punctuation} That {subject} sure {verb} it!',
         'SUBJECT': ['mouse', 'cat', 'dog', 'elephant', 'iguana'],
         'verb': ['ate', 'chased', 'hugged', 'played with'],
-        'Adjective': ['', 'effin\'', 'freakin\''],
-        'ObJeCt': ['👻' , 'foam ball', 'ostrich egg', 'wooden stick', 'oak leaf', '«speeding ambulance»', 'radio telescope'],
+        'Adjective': ['', '', 'effin\'', 'freakin\''],
+        'ObJeCt': ['👻' , 'FOAM BALL', 'ostrich egg', 'wooden stick', 'oak leaf', '«speeding ambulance»', 'radio telescope'],
         'punctuation': ['!', '?', '.', '.'],
     }
     if gfn:
