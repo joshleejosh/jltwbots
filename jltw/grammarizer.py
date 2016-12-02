@@ -40,14 +40,14 @@ class Grammarizer(object):
     def generate(self):
         rv = self.replace_tokens('*', self.grammar['*'])
         if self.doAAnReplacement:
-            rv = self.replaceAAn(rv)
+            rv = self.replace_aan(rv)
         return rv
 
     def replace_tokens(self, key, ins):
         if isinstance(ins, basestring):
             for match in reversed(list(RE_TOKEN.finditer(ins))):
                 mkey = match.group(1).strip()
-                
+
                 repl = ''
                 if self.doAAnReplacement and mkey.lower() == 'aan':
                     repl = '{%s}'%(self.caseify(mkey, 'aan'))
@@ -55,9 +55,10 @@ class Grammarizer(object):
                     repl = self.replace_tokens(mkey, self.grammar[mkey.lower()])
                 repl = self.caseify(mkey, repl)
 
-                # if we're replacing with an empty string, make sure we don't have extra spaces.
-                if not repl and ins[match.end()].isspace():
-                    ins = ins[0:match.start()] + ins[match.end()+1:]
+                # if we're replacing with an empty string, make sure we
+                # don't leave stray spaces in its wake.
+                if not repl:
+                    ins = self.squeeze_blank(ins, match.start(), match.end())
                 else:
                     ins = ins[0:match.start()] + repl + ins[match.end():]
 
@@ -69,12 +70,30 @@ class Grammarizer(object):
                 v = self.shuffler.choice(key.lower(), ins)
             else:
                 v = random.choice(ins)
-            return self.replace_tokens(key, v.lower())
+            return self.replace_tokens(key, v)
 
         else:
             return ins
 
-    def replaceAAn(self, s):
+    def squeeze_blank(self, ins, si, ei):
+        repl = ''
+        if si == 0:
+            while ei<len(ins) and ins[ei].isspace():
+                ei += 1
+        elif ei == len(ins):
+            while ins[si-1].isspace():
+                si -= 1
+        else:
+            if ins[si-1].isspace() or (ei<len(ins) and ins[ei].isspace()):
+                repl = ' '
+            while ins[si-1].isspace():
+                si -= 1
+            while ei<len(ins) and ins[ei].isspace():
+                ei += 1
+        ins = ins[0:si] + repl + ins[ei:]
+        return ins
+
+    def replace_aan(self, s):
         # a/an replacement
         for m in reversed(list(RE_AAN.finditer(s))):
             # scan to the next letter.
@@ -95,7 +114,7 @@ class Grammarizer(object):
     def caseify(self, src, tgt):
         src = src.strip().strip('{}')
         rv = tgt
-        firstLetter = 0
+        firstLetter = -1
         for i in xrange(len(tgt)):
             if tgt[i].isalpha() or tgt[i].isdigit():
                 firstLetter = i
@@ -104,20 +123,39 @@ class Grammarizer(object):
             rv = tgt.upper()
         elif src[0:2].isupper():
             rv = tgt.title()
-        elif src[0].isupper():
+        elif src[0].isupper() and firstLetter > -1:
             rv = tgt[0:firstLetter] + tgt[firstLetter].upper() + tgt[firstLetter+1:]
         return rv
 
-if __name__ == '__main__':
+def main(gfn, sfn, n):
+    sh = shuffler.Shuffler()
     grammar = {
-            '*': '{Aan} {subject} {verb} {aan} {ADJECTIVE} {OBject}{punctuation}',
-            'SUBJECT': ['mouse', 'cat', 'dog', 'elephant', 'iguana'],
-            'verb': ['ate', 'chased', 'hugged', 'played with'],
-            'Adjective': ['', 'amazing', 'freakin\''],
-            'ObJeCt': ['👻' , 'foam ball', 'ostrich egg', 'wooden stick', 'oak leaf', '«speeding ambulance»', 'radio telescope'],
-            'punctuation': ['!', '?', '.', '.'],
+        '*': '{Aan} {subject} {verb} {aan} {ADJECTIVE} {OBject}{punctuation}',
+        'SUBJECT': ['mouse', 'cat', 'dog', 'elephant', 'iguana'],
+        'verb': ['ate', 'chased', 'hugged', 'played with'],
+        'Adjective': ['', 'effin\'', 'freakin\''],
+        'ObJeCt': ['👻' , 'foam ball', 'ostrich egg', 'wooden stick', 'oak leaf', '«speeding ambulance»', 'radio telescope'],
+        'punctuation': ['!', '?', '.', '.'],
     }
-    gizer = Grammarizer(grammar, None)
-    for i in xrange(10):
+    if gfn:
+        fp = codecs.open(gfn, encoding='utf-8')
+        grammar = json.load(fp)
+        fp.close()
+    if sfn:
+        sh.load(sfn)
+
+    gizer = Grammarizer(grammar, sh)
+    for i in xrange(n):
         print gizer.generate()
+    if sfn:
+        sh.save()
+
+if __name__ == '__main__':
+    import argparse, codecs, json, shuffler
+    parser = argparse.ArgumentParser()
+    parser.add_argument('grammarfile', type=str, nargs='?')
+    parser.add_argument('shufflefile', type=str, nargs='?')
+    parser.add_argument('num', type=int, nargs='?', default=1)
+    args = parser.parse_args()
+    main(args.grammarfile, args.shufflefile, args.num)
 
