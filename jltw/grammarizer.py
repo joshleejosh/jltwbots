@@ -24,11 +24,16 @@ the lists will be picked from and fixed to a single value BEFORE the grammar is
 run. This results in values that are randomized between runs but consistent
 within a run.
 
+If the '*include' key is present and is a list of filenames, those files will
+be loaded and added to the grammar. Values in the primary file take precedence
+over those in included files.
+
 """
 
 import random, re, copy
 
 KEY_ROOT = "*"
+KEY_INCLUDE = "*include"
 KEY_FIXEDVAL = "*fix"
 RE_TOKEN = re.compile(r'{([^}]*)}')
 RE_AAN = re.compile(r'{aan}', re.I)
@@ -37,7 +42,7 @@ class Grammarizer(object):
 
     def __init__(self, g, s):
         if not g:
-            g = {'*':''}
+            g = {u'*':u''}
         self.set_grammar(g)
         self.shuffler = s
         self.doAAnReplacement = True
@@ -48,6 +53,23 @@ class Grammarizer(object):
         for k,v in self.grammar.iteritems():
             del self.grammar[k]
             self.grammar[k.lower()] = v
+
+        if self.grammar.has_key(KEY_INCLUDE):
+            d = {}
+            includes = self.grammar[KEY_INCLUDE]
+            del self.grammar[KEY_INCLUDE]
+            if isinstance(includes, basestring):
+                includes = (includes,)
+            for ifn in includes:
+                fp = codecs.open(ifn, encoding='utf-8')
+                j = json.load(fp)
+                fp.close()
+                d.update(j)
+            # make sure the grammar is the last set to be applied: if there are
+            # conflicts, we want the master file to overwrite included files.
+            d.update(self.grammar)
+            self.grammar = d
+
         self.originalGrammar = copy.deepcopy(self.grammar)
 
     def generate(self):
@@ -56,7 +78,10 @@ class Grammarizer(object):
 
         # handle pre-substituted values
         if self.grammar.has_key(KEY_FIXEDVAL):
-            for k in self.grammar[KEY_FIXEDVAL]:
+            fixes = self.grammar[KEY_FIXEDVAL]
+            if isinstance(fixes, basestring):
+                fixes = (fixes,)
+            for k in fixes:
                 k = k.lower()
                 if self.grammar.has_key(k):
                     a = self.grammar[k]
@@ -75,7 +100,7 @@ class Grammarizer(object):
 
                 repl = ''
                 if self.doAAnReplacement and mkey.lower() == 'aan':
-                    repl = '{%s}'%(self.caseify(mkey, 'aan'))
+                    repl = '{%s}'%mkey
                 else:
                     repl = self.replace_tokens(mkey, self.grammar[mkey.lower()])
                 repl = self.caseify(mkey, repl)
@@ -155,7 +180,7 @@ class Grammarizer(object):
 def main(gfn, sfn, n):
     sh = shuffler.Shuffler()
     grammar = {
-        '*fix': [ 'sUbJeCt', 'verb' ],
+        '*fix': [ 'sUbJeCt', 'VERB' ],
         '*': '{Aan} {subject} {verb} {aan} {ADJECTIVE} {OBject}{punctuation} That {subject} sure {verb} it!',
         'SUBJECT': ['mouse', 'cat', 'dog', 'elephant', 'iguana'],
         'verb': ['ate', 'chased', 'hugged', 'played with'],
