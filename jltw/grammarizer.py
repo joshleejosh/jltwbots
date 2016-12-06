@@ -12,10 +12,11 @@ grammar is initialized.
 
 When a token is all-caps or begins with an uppercase letter, the replacement
 will be similarly capitalized. When the first TWO letters are uppercase, the
-replacement will be title cased. When the key is lowercase, the replacement
+replacement will be title cased. When the token is lowercase, the replacement
 string will be left alone, whatever its case is.)
+(TODO: a way to force lowercase?)
 
-{aan} is a magic key that will be replaced with "A" or "AN", depending on the
+{aan} is a magic token that will be replaced with "A" or "AN", depending on the
 next word. This can be disabled by setting the doAAnReplacement property to
 False.
 
@@ -27,6 +28,11 @@ within a run.
 If the '*include' key is present and is a list of filenames, those files will
 be loaded and added to the grammar. Values in the primary file take precedence
 over those in included files.
+
+If a token ends with '?' (e.g., {foo?} instead of {foo}), and the token's value
+is a list, a blank will be appended to the list to make the value optional. If
+the token ends with '??' ({foo??} instead of {foo?} or {foo}), there will be a
+50/50 chance of a blank (instead of 1/len(list)).
 
 """
 
@@ -98,11 +104,24 @@ class Grammarizer(object):
             for match in reversed(list(RE_TOKEN.finditer(ins))):
                 mkey = match.group(1).strip()
 
+                addblank = flipblank = False
+                if mkey.endswith('??'):
+                    mkey = mkey[:-2]
+                    flipblank = True
+                elif mkey.endswith('?'):
+                    mkey = mkey[:-1]
+                    addblank = True
+
                 repl = ''
                 if self.doAAnReplacement and mkey.lower() == 'aan':
                     repl = '{%s}'%mkey
                 else:
-                    repl = self.replace_tokens(mkey, self.grammar[mkey.lower()])
+                    a = self.grammar[mkey.lower()]
+                    if (flipblank or (addblank and isinstance(a, basestring))) and random.random() < .5:
+                        a = ""
+                    if addblank and not isinstance(a, basestring):
+                        a.append('')
+                    repl = self.replace_tokens(mkey, a)
                 repl = self.caseify(mkey, repl)
 
                 # if we're replacing with an empty string, make sure we
@@ -181,12 +200,13 @@ def main(gfn, sfn, n):
     sh = shuffler.Shuffler()
     grammar = {
         '*fix': [ 'sUbJeCt', 'VERB' ],
-        '*': '{Aan} {subject} {verb} {aan} {ADJECTIVE} {OBject}{punctuation} That {subject} sure {verb} it!',
-        'SUBJECT': ['mouse', 'cat', 'dog', 'elephant', 'iguana'],
-        'verb': ['ate', 'chased', 'hugged', 'played with'],
-        'Adjective': ['', '', 'effin\'', 'freakin\''],
-        'ObJeCt': ['👻' , 'FOAM BALL', 'ostrich egg', 'wooden stick', 'oak leaf', '«speeding ambulance»', 'radio telescope'],
-        'punctuation': ['!', '?', '.', '.'],
+        '*': '{Aan} {subject} {verb} {aan} {ADJECTIVE??} {OBject}{punctuation} {Coda?}',
+        'SUBJECT': [ 'mouse', 'cat', 'dog', 'elephant', 'iguana' ],
+        'verb': [ 'ate', 'chased', 'hugged', 'played with' ],
+        'Adjective': [ 'effin\'', 'freakin\'' ],
+        'ObJeCt': [ '👻' , 'FOAM BALL', 'ostrich egg', 'wooden stick', 'oak leaf', '«speeding ambulance»', 'radio telescope' ],
+        'punctuation': [ '!', '?', '.', '.'],
+        'coda': 'That {subject} sure {verb} it{punctuation}',
     }
     if gfn:
         fp = codecs.open(gfn, encoding='utf-8')
