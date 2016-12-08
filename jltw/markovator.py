@@ -5,7 +5,7 @@ CACHE_DELIM = '\v'
 TERMINATOR = '\f'
 
 class Markovator:
-    # data is a list of sentences
+    # data is a list of lists (sentences) of tokens (words)
     # filter is a function(word) that returns True if the word is okay to use, and False if it should be skipped over.
     def __init__(self, data, filter=None, order=2):
         self.cache = defaultdict(list)
@@ -14,8 +14,7 @@ class Markovator:
         
         for sentence in self.corpus:
             tokens = deque([TERMINATOR,]*self.order, self.order)
-            a = sentence.split()
-            for word in a:
+            for word in sentence:
                 if filter and not filter(word):
                     continue
                 self.cache[tuple(tokens)].append(word)
@@ -24,15 +23,16 @@ class Markovator:
 
     def chain(self):
         tokens = deque([TERMINATOR,]*self.order, self.order)
-        rv = nextword = ''
+        rv = []
+        nextword = random.choice(list(self.cache[tuple(tokens)]))
         while nextword != TERMINATOR:
-            nextword = random.choice(list(self.cache[tuple(tokens)]))
-            rv += ' ' + nextword
+            rv.append(nextword)
             tokens.append(nextword)
-        return rv.strip()
+            nextword = random.choice(list(self.cache[tuple(tokens)]))
+        return rv
 
     def generate(self, filter=None, retries=20):
-        rv = ''
+        rv = []
         faili = 0
         rv = self.chain()
         if filter and retries > 0:
@@ -40,7 +40,6 @@ class Markovator:
                 faili += 1
                 rv = self.chain()
         return rv
-
 
 
 if __name__ == '__main__':
@@ -53,7 +52,7 @@ if __name__ == '__main__':
     fp = codecs.open(args.textfile, encoding='utf-8')
     sentences = fp.readlines()
     fp.close()
-    m = Markovator(sentences)
+    m = Markovator((s.strip().split() for s in sentences))
     for i in xrange(args.num):
-        print m.generate()
+        print ' '.join(m.generate())
 

@@ -14,12 +14,13 @@ def is_usable(w):
         return False
     return True
 
-def is_tweetable(s):
+def is_tweetable(a):
+    s = ' '.join(a)
     # Keep things tweet sized.
     if len(s) > 140:
         return False
     # The shorter the phrase, the better chance it will just reconstruct an actual tweet.
-    if len(s.split()) < 6:
+    if len(a) < 6:
         return False
     # Did we accidentally recreate an original tweet?
     su = s.upper()
@@ -42,7 +43,7 @@ if __name__ == '__main__':
     tweets = json.load(fp)
     fp.close()
     CORPUS = list(xml.sax.saxutils.unescape(tw['text']) for tw in tweets)
-    m = jltw.markovator.Markovator(CORPUS, is_usable)
+    m = jltw.markovator.Markovator((s.strip().split() for s in CORPUS), is_usable)
 
     api = None
     if args.tweet:
@@ -50,7 +51,7 @@ if __name__ == '__main__':
         args.num_tweets = 1
 
     for i in xrange(args.num_tweets):
-        s = m.generate(is_tweetable)
+        s = ' '.join(m.generate(is_tweetable))
 
         # Fix ending punctuation flakiness -- in particular, I tend to end a
         # tweet that contains a link with a colon instead of a period; since we
