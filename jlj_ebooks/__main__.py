@@ -3,30 +3,32 @@
 import argparse, json, random, xml.sax.saxutils
 import jltw, jltw.markovator
 
-# #########################################################
+CORPUS = []
 
 def is_usable(w):
-    rv = True
     if '@' in w:
-        rv = False
+        return False
     if w.startswith('http'):
-        rv = False
+        return False
     if w in ('RT', 'MT'):
-        rv = False
-    return rv
+        return False
+    return True
 
 def is_tweetable(s):
-    rv = True
     # Keep things tweet sized.
     if len(s) > 140:
-        rv = False
+        return False
     # The shorter the phrase, the better chance it will just reconstruct an actual tweet.
     if len(s.split()) < 6:
-        rv = False
-    return rv
+        return False
+    # Did we accidentally recreate an original tweet?
+    su = s.upper()
+    hits = list(t for t in CORPUS if t.upper().find(su) != -1)
+    if hits:
+        print 'OMG DUPLICATED ORIGINAL: [%s] [%s]'%([s,], hits)
+        return False
+    return True
 
-
-# #########################################################
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -39,8 +41,8 @@ if __name__ == '__main__':
     fp = open(args.tweetfile)
     tweets = json.load(fp)
     fp.close()
-    sentences = list(xml.sax.saxutils.unescape(tw['text']) for tw in tweets)
-    m = jltw.markovator.Markovator(sentences, is_usable)
+    CORPUS = list(xml.sax.saxutils.unescape(tw['text']) for tw in tweets)
+    m = jltw.markovator.Markovator(CORPUS, is_usable)
 
     api = None
     if args.tweet:
