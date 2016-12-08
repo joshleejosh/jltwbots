@@ -1,52 +1,43 @@
 import argparse, json, random, xml.sax.saxutils, codecs
-from collections import defaultdict
+from collections import defaultdict, deque
 
-MAX_FILTER_FAILURES = 20
 CACHE_DELIM = '\v'
 TERMINATOR = '\f'
 
 class Markovator:
     # data is a list of sentences
     # filter is a function(word) that returns True if the word is okay to use, and False if it should be skipped over.
-    def __init__(self, data, filter=None):
+    def __init__(self, data, filter=None, order=2):
         self.cache = defaultdict(list)
         self.corpus = data
+        self.order = order
         
         for sentence in self.corpus:
-            p = q = TERMINATOR
+            tokens = deque([TERMINATOR,]*self.order, self.order)
             a = sentence.split()
             for word in a:
-                word = word.strip()
-                if not word:
-                    continue
                 if filter and not filter(word):
                     continue
-                try:
-                    self.cache[(p,q)].append(word)
-                except KeyError:
-                    self.cache[(p,q)] = [word]
-                p = q
-                q = word
-            self.cache[(p,q)].append(TERMINATOR)
+                self.cache[tuple(tokens)].append(word)
+                tokens.append(word)
+            self.cache[tuple(tokens)].append(TERMINATOR)
 
     def chain(self):
-        p = q = TERMINATOR
+        tokens = deque([TERMINATOR,]*self.order, self.order)
         rv = nextword = ''
         while nextword != TERMINATOR:
-            nextword = random.choice(list(self.cache[(p,q)]))
+            nextword = random.choice(list(self.cache[tuple(tokens)]))
             rv += ' ' + nextword
-            p = q
-            q = nextword
+            tokens.append(nextword)
         return rv.strip()
 
-    def generate(self, filter=None):
+    def generate(self, filter=None, retries=20):
         rv = ''
         faili = 0
         rv = self.chain()
-        if filter:
-            while not filter(rv) and faili < MAX_FILTER_FAILURES:
+        if filter and retries > 0:
+            while not filter(rv) and faili < retries:
                 faili += 1
-                #print '!REJECTED: %s'%rv
                 rv = self.chain()
         return rv
 
@@ -55,8 +46,8 @@ class Markovator:
 if __name__ == '__main__':
     import argparse, codecs, json, shuffler
     parser = argparse.ArgumentParser()
-    parser.add_argument('textfile', type=str)
-    parser.add_argument('num', type=int, nargs='?', default=1)
+    parser.add_argument('textfile', type=str, help='File containing one input sentence per line')
+    parser.add_argument('num', type=int, nargs='?', default=1, help='Number of sentences to generate')
     args = parser.parse_args()
 
     fp = codecs.open(args.textfile, encoding='utf-8')
