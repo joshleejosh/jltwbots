@@ -8,7 +8,7 @@ class Markovator:
     # data is a list of lists (sentences) of tokens (words)
     # filter is a function(word) that returns True if the word is okay to use, and False if it should be skipped over.
     def __init__(self, data, filter=None, order=2):
-        self.cache = defaultdict(list)
+        self.cache = defaultdict(lambda: defaultdict(int))
         self.corpus = data
         self.order = order
         
@@ -17,18 +17,32 @@ class Markovator:
             for word in sentence:
                 if filter and not filter(word):
                     continue
-                self.cache[tuple(tokens)].append(word)
+                self.cache[tuple(tokens)][word] += 1
                 tokens.append(word)
-            self.cache[tuple(tokens)].append(TERMINATOR)
+            self.cache[tuple(tokens)][TERMINATOR] += 1
+
+    def _pick(self, t):
+        opts = self.cache[t]
+        tot = sum(opts.values())
+        pik = random.uniform(0, tot)
+        top = 0
+        for o,c in opts.iteritems():
+            top += c
+            if top >= pik:
+                #print 'picked from [%s][%s]: [%d] [%d] [%d] -> [%s]'%(t, opts, tot, pik, top, o)
+                return o
+        # shouldn't get here
+        print 'ERROR: couldn\'t pick from [%s][%s]: [%d] [%d] [%d]'%(t, opts, tot, pik, top)
+        return random.choice(opts.keys()) # panic pick
 
     def chain(self):
         tokens = deque([TERMINATOR,]*self.order, self.order)
         rv = []
-        nextword = random.choice(list(self.cache[tuple(tokens)]))
+        nextword = self._pick(tuple(tokens))
         while nextword != TERMINATOR:
             rv.append(nextword)
             tokens.append(nextword)
-            nextword = random.choice(list(self.cache[tuple(tokens)]))
+            nextword = self._pick(tuple(tokens))
         return rv
 
     def generate(self, filter=None, retries=20):
