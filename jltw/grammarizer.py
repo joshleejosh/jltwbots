@@ -31,12 +31,12 @@ over those in included files.
 
 If a token ends with '?' (e.g., {foo?} instead of {foo}), and the token's value
 is a list, a blank will be appended to the list to make the value optional. If
-the token ends with '??' ({foo??} instead of {foo?} or {foo}), there will be a
-50/50 chance of a blank (instead of 1/len(list)).
+the token ends with '??' (e.g., {foo??}), there will be a 50/50 chance of a
+blank (instead of 1/len(list)).
 
 """
 
-import random, re, copy
+import os, random, re, copy
 
 KEY_ROOT = "*"
 KEY_INCLUDE = "*include"
@@ -46,9 +46,10 @@ RE_AAN = re.compile(r'{aan}', re.I)
 
 class Grammarizer(object):
 
-    def __init__(self, g, s):
+    def __init__(self, g, s, d=os.getcwd()):
         if not g:
             g = {u'*':u''}
+        self.includePath = d
         self.set_grammar(g)
         self.shuffler = s
         self.doAAnReplacement = True
@@ -67,6 +68,7 @@ class Grammarizer(object):
             if isinstance(includes, basestring):
                 includes = (includes,)
             for ifn in includes:
+                ifn = os.path.join(self.includePath, ifn)
                 fp = codecs.open(ifn, encoding='utf-8')
                 j = json.load(fp)
                 fp.close()
@@ -208,14 +210,16 @@ def main(gfn, sfn, n):
         'punctuation': [ '!', '?', '.', '.'],
         'coda': 'That {subject} sure {verb} it{punctuation}',
     }
+    wdir = os.getcwd()
     if gfn:
         fp = codecs.open(gfn, encoding='utf-8')
         grammar = json.load(fp)
+        wdir = os.path.dirname(os.path.realpath(gfn))
         fp.close()
     if sfn:
         sh.load(sfn)
 
-    gizer = Grammarizer(grammar, sh)
+    gizer = Grammarizer(grammar, sh, wdir)
     for i in xrange(n):
         print gizer.generate()
     if sfn:
