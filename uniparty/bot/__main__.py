@@ -42,6 +42,11 @@ if __name__ == '__main__':
             help='dir with files to choose from')
     parser.add_argument('authfile',
             help='file containing twitter credentials')
+    parser.add_argument('-f', '--file',
+            dest='forcefile',
+            action='store',
+            type=str,
+            help='specify a file to process (ignore srcdir) (file will be scrubbed after upload!)')
     parser.add_argument('-t', '--tweet',
             action='store_true',
             dest='tweet',
@@ -62,19 +67,21 @@ if __name__ == '__main__':
     mru = jltw.mru.MRU(MRU_FN)
     mru.load()
 
-    fn = pick_file(args.srcdir)
+    fn = args.forcefile
     if not fn:
-        print 'FAILURE: No images to upload!'
-        exit(0)
-    for retryi in xrange(RETRIES):
-        fn = os.path.realpath(fn)
-        bn = os.path.splitext(os.path.basename(fn))[0]
-        if bn in mru:
-            vlog('MRU hit [%s]'%bn)
-            del_file(fn)
-            fn = pick_file(args.srcdir)
-        else:
-            break
+        fn = pick_file(args.srcdir)
+        if not fn:
+            print 'FAILURE: No images to upload!'
+            exit(0)
+        for retryi in xrange(RETRIES):
+            fn = os.path.realpath(fn)
+            bn = os.path.splitext(os.path.basename(fn))[0]
+            if bn in mru:
+                vlog('MRU hit [%s]'%bn)
+                del_file(fn)
+                fn = pick_file(args.srcdir)
+            else:
+                break
 
     text = make_text(fn)
     print text.encode('utf-8')
