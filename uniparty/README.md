@@ -1,6 +1,6 @@
 # UNIPARTY: A party of Unicode characters
 
-Render random Unicode characters and post them to Twitter (see [@UnicodeParade|https://twitter.com/UnicodeParade]).
+Render random Unicode characters and post them to Twitter (see <a href="https://twitter.com/UnicodeParade">@UnicodeParade</a>).
 
 There are three parts to this mess:
 
@@ -10,7 +10,7 @@ Has many (too many) requirements:
 
 * Python FontTools library.
 * A directory full of fonts that render diverse Unicode blocks (cf. the Google Noto project).
-* Gapplin for nice SVG rendering and PNG conversion.
+* Gapplin for non-crappy SVG text rendering and PNG conversion.
 * Automator (incl. Gapplin's task) to do PNG conversion.
 
 Generation works in a few steps:
