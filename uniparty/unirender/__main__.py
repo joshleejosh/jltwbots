@@ -80,19 +80,22 @@ def render_svg(u, fn, fontfn, hv):
         #vlog(h, s, v, d['CC2'])
 
         h, s, v = h2f(a[6]), h2f(a[7]), h2f(a[8])
+        # fudge sat and val so we have some room for fading
+        s = morp(s, 0.0, 1.0, 0.0333, 0.9667)
+        v = morp(v, 0.0, 1.0, 0.0333, 0.9667)
         d['CB1'] = hsv_to_hex(h, s, v)
         vlog(h, s, v, d['CB1'])
 
-        h = adjust_color_value(h, a[ 9], 0.0333, 0.0667)
+        h = adjust_color_value(h, a[ 9], 0.0167, 0.0333)
         s = adjust_color_value(s, a[10], 0.0667, 0.1333)
-        v = adjust_color_value(v, a[11], 0.1333, 0.2667)
+        v = adjust_color_value(v, a[11], 0.1333, 0.2000)
         d['CB2'] = hsv_to_hex(h, s, v)
         vlog(h, s, v, d['CB2'])
 
-        d['GBX'] = '%d%%'%int(100 * lerp(h2f(a[12]), 0.200, 0.800))
-        d['GBY'] = '%d%%'%int(100 * lerp(h2f(a[13]), 0.200, 0.800))
-        d['GBR'] = '%d%%'%int(100 * lerp(h2f(a[14]), 0.667, 0.917))
-        #d['GCR'] = '%d%%'%int(100 * lerp(h2f(a[15]), 0.667, 0.917))
+        d['GBX'] = '%d%%'%int(100 * lerp(h2f(a[12]), 0.2000, 0.8000))
+        d['GBY'] = '%d%%'%int(100 * lerp(h2f(a[13]), 0.2000, 0.8000))
+        d['GBR'] = '%d%%'%int(100 * lerp(h2f(a[14]), 0.7667, 0.9333))
+        #d['GCR'] = '%d%%'%int(100 * lerp(h2f(a[15]), 0.7667, 0.9333))
         vlog(d['GBX'], d['GBY'], d['GBR'], d['GCR'])
 
     fn = os.path.join(DDIR, '%s.svg'%fn)
@@ -184,7 +187,7 @@ if __name__ == '__main__':
 
     ffn = ofn = ''
     a = []
-    a.extend((unichr(int(i,16)) for i in args.codes))
+    a.extend(((unichr(int(i,16)),args.fontfile) for i in args.codes))
     i = 0
     while i < args.numchars:
         if args.fontfile:
@@ -211,7 +214,7 @@ if __name__ == '__main__':
             i += 1
 
     for u,ffn in a:
-        render_char(u, ffn)
+        render_char(u, os.path.realpath(ffn))
         mru.add(hex(ord(u)))
 
     mru.save()

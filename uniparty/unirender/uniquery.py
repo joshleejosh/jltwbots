@@ -86,6 +86,10 @@ def __pickem(f):
         c = unicodedata.category(u)
         if c[0] in ('C', 'Z'):
             continue
+        n = unicodedata.name(u, '')
+        # ehhh, let's just not, okay?
+        if n.upper().find('SVASTI') != -1:
+            continue
         return u
     return rv
 
