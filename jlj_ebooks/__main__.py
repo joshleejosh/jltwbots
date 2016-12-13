@@ -63,5 +63,5 @@ if __name__ == '__main__':
 
         if s and args.tweet:
             api.PostUpdate(s)
-        print s
+        print s.encode('utf-8')
 
