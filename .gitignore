@@ -1,7 +1,12 @@
 
 *.py[cod]
+**/*.mru
 
 botenv
+
+uniparty/Noto-unhinted
+uniparty/out
+uniparty/arc
 
 floorisx_credentials.json
 jlj_ebooks_credentials.json
@@ -9,7 +14,6 @@ secrethist_credentials.json
 
 jlj_ebooks/joshleejosh_tweets.json
 floorisx/floorisx_shuffle.json
-secrethist/*.mru
 
 *.tmp
 .DS_Store
