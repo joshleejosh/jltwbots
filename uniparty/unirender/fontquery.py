@@ -1,9 +1,12 @@
-import glob, random
+import glob
 from itertools import chain
 from fontTools.ttLib import TTFont
 from fontTools.unicode import Unicode
+import jltw.shuffler
 import uniquery
 from util import *
+
+SHUFFLE_FN = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'fonts.shuffle')
 
 # Lots of fonts contain ASCII chars for compatibility, but we only want them from
 # the basic latin fonts.
@@ -42,8 +45,11 @@ def _filter_char(o, fn):
     return uniquery.isusable(o)
 
 def random_font(dir):
+    sh = jltw.shuffler.load(SHUFFLE_FN)
     files = glob.glob(dir+'/*.[to]tf')
-    return random.choice(files)
+    rv = sh.choice('f', files)
+    sh.save()
+    return rv
 
 # Turn a big list of values into a more friendly set of ranges.
 # http://stackoverflow.com/a/3430231
@@ -73,6 +79,8 @@ def dump_catalog(dir):
 
 if __name__ == '__main__':
     import os.path, collections
-    dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'Noto-unhinted')
-    dump_catalog(dir)
+    dir = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'Noto-unhinted'))
+    #dump_catalog(dir)
+    for i in xrange(90):
+        print random_font(dir)
 

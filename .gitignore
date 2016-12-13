@@ -4,10 +4,6 @@
 
 botenv
 
-uniparty/Noto-unhinted
-uniparty/out
-uniparty/arc
-
 floorisx_credentials.json
 jlj_ebooks_credentials.json
 secrethist_credentials.json
@@ -15,6 +11,11 @@ uniparty_credentials.json
 
 jlj_ebooks/joshleejosh_tweets.json
 floorisx/floorisx_shuffle.json
+
+uniparty/Noto-unhinted
+uniparty/out
+uniparty/arc
+uniparty/unirender/fonts.shuffle
 
 *.tmp
 .DS_Store

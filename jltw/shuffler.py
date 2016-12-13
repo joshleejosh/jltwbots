@@ -1,10 +1,7 @@
-# A very silly way to serialize shuffled datasets, in order to maintain
+# A very silly way to persist shuffled datasets, in order to maintain
 # distribution across runs of a program.
 
-# TODO: this is only using single chrs from 'A' up to represent options, so it
-# will crap out on arrays of more than 61 items (give or take).
-
-import os.path, json, random, re, codecs, io
+import os.path, json, random, codecs, io
 
 class Shuffler:
     CHROFFSET = ord('A')
@@ -64,9 +61,47 @@ class Shuffler:
             rv = random.choice(a)
         return rv
 
-
 def load(fn):
     rv = Shuffler()
     rv.load(fn)
     return rv
+
+if __name__ == '__main__':
+    import tempfile
+    tfd, tfn = tempfile.mkstemp()
+    try:
+        s = load(tfn)
+        assert(len(s.state) == 0)
+        a = range(300)
+
+        # first choice fills up state, shuffles, and pops a value
+        print s.choice(u'a', a)
+        smerge = s.state['a']
+
+        # check persistence
+        s.save()
+        with open(tfn) as fp:
+            print fp.read()
+
+        # Make sure state was persisted and reloaded correctly
+        t = load(tfn)
+        tmerge = t.state['a']
+        assert(smerge == tmerge)
+
+        # exhaust the shuffler.
+        b = []
+        for i in xrange(299):
+            v = t.choice('a', a)
+            assert(v not in b)
+            b.append(v)
+        assert(len(t.state['a']) == 0)
+        bmerge = u''.join((unichr(i+ord('A')) for i in b))
+        assert(tmerge == bmerge)
+        # saved file should contain an empty value for the 'a' key
+        t.save()
+        with open(tfn) as fp:
+            ts = fp.read()
+            assert(ts == u'{\n "a": ""\n}')
+    finally:
+        os.remove(tfn)
 
