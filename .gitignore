@@ -11,6 +11,7 @@ uniparty/arc
 floorisx_credentials.json
 jlj_ebooks_credentials.json
 secrethist_credentials.json
+uniparty_credentials.json
 
 jlj_ebooks/joshleejosh_tweets.json
 floorisx/floorisx_shuffle.json
