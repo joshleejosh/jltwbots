@@ -1,3 +1,4 @@
+# encoding: utf-8
 import os, os.path, codecs
 from collections import defaultdict, deque
 
@@ -6,10 +7,15 @@ MRU_LEN = 48
 MRULENTAG = u'^_^MRULEN='
 
 class MRU(object):
-    def __init__(self, fn):
+    def __init__(self, fn=''):
         self.q = deque([], MRU_LEN)
         self.filename = fn
         self.length = MRU_LEN
+
+    def __str__(self):
+        return ' '.join(str(i) for i in self.q)
+    def __unicode__(self):
+        return u' '.join((unicode(i) for i in self.q))
 
     def __iter__(self):
         return iter(self.q)
@@ -22,6 +28,8 @@ class MRU(object):
             self.q.append(v)
 
     def load(self):
+        if not self.filename:
+            return
         if os.path.exists(self.filename):
             fp = codecs.open(self.filename, encoding='utf-8')
             a = fp.read().split('\n')
@@ -44,6 +52,8 @@ class MRU(object):
     def save(self, newid=None):
         if newid:
             self.add(newid)
+        if not self.filename:
+            return
         us = '\n'.join((unicode(i) for i in self.q))
 
         fp = codecs.open(self.filename, 'w', encoding='utf-8')
@@ -56,6 +66,7 @@ class MRU(object):
 
 if __name__ == '__main__':
     import tempfile
+    print '1: Build an MRU from scratch'
     tfd, tfn = tempfile.mkstemp()
     try:
         m = MRU(tfn)
@@ -67,7 +78,7 @@ if __name__ == '__main__':
         m.add('e')
         print 'd' in m
         print 'f' in m
-        print ' '.join(m)
+        print m
         m.save()
         with open(tfn) as fp:
             print fp.read()
@@ -80,6 +91,7 @@ if __name__ == '__main__':
     finally:
         os.remove(tfn)
 
+    print '2: Check/add to an existing MRU file, adjust size'
     tfd, tfn = tempfile.mkstemp()
     try:
         os.write(tfd, MRULENTAG+'4\nz\ny\nx\n')
@@ -93,10 +105,28 @@ if __name__ == '__main__':
         m.add('a')
         m.add('b')
         m.add('c')
-        print ' '.join([i.upper() for i in m])
+        print [i.upper() for i in m]
         m.save()
         with open(tfn) as fp:
             print fp.read()
     finally:
         os.remove(tfn)
+
+    print '3: Do a file-less temp MRU'
+    m = MRU()
+    print m.q.maxlen
+    m.load() # should safely nop
+    print m
+    m.add(u'ä')
+    m.add(u'b')
+    m.add(u'ç')
+    m.save(u'd') # should safely nop (aside from the add)
+    try:
+        print str(m)
+    except Exception as e:
+        print e
+    try:
+        print unicode(m)
+    except Exception as e:
+        print e
 
