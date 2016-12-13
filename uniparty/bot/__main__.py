@@ -12,7 +12,7 @@ mru = None
 
 def vlog(*args):
     if VERBOSE:
-        print ' '.join((unicode(i) for i in args))
+        print ' '.join((unicode(i).encode('utf-8') for i in args))
 
 def pick_file(dir):
     files = glob.glob(dir+'/*.png')
@@ -77,7 +77,7 @@ if __name__ == '__main__':
             break
 
     text = make_text(fn)
-    print text
+    print text.encode('utf-8')
 
     if not DRYRUN:
         if args.tweet:
