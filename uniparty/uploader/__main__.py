@@ -2,16 +2,15 @@ import os, os.path, argparse, glob, subprocess
 
 WDIR = os.path.dirname(os.path.realpath(__file__))
 ODIR = os.path.join(WDIR, '..', 'out')
-ARCDIR = os.path.join(WDIR, '..', 'arc')
 
-def upload_files(dest, dryrun, verbose):
+def upload_files(src, dest, dryrun, verbose):
     pargs = ['rsync', '-az' ]
     if dryrun:
         pargs.append('-n')
     if verbose:
         pargs.append('-v')
 
-    files = glob.glob(ODIR+'/*.png')
+    files = glob.glob(src+'/*.png')
     if not files:
         print 'Nothing to upload!'
         return
@@ -23,8 +22,12 @@ def upload_files(dest, dryrun, verbose):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('remote_path',
-            help='Path to upload to')
+    parser.add_argument('src_dir',
+            help='Local path to upload PNGs from')
+    parser.add_argument('remote_dest',
+            help='Remote path (rsync/ssh) to upload PNGs to')
+    parser.add_argument('arc_dir',
+            help='Local path to archive SVGs to')
     parser.add_argument('-n', '--dry-run',
             dest='dryrun',
             action='store_true',
@@ -35,19 +38,19 @@ if __name__ == '__main__':
             help='extra debug spam')
     args = parser.parse_args()
 
-    upload_files(args.remote_path, args.dryrun, args.verbose)
+    upload_files(args.src_dir, args.remote_dest, args.dryrun, args.verbose)
 
-    for fn in glob.glob(ODIR+'/*.png'):
+    for fn in glob.glob(args.src_dir+'/*.png'):
         fn = os.path.realpath(fn)
         if args.verbose:
             print 'rm %s'%(fn)
         if not args.dryrun:
             os.remove(fn)
 
-    for fn in glob.glob(ODIR+'/*.svg'):
+    for fn in glob.glob(args.src_dir+'/*.svg'):
         fn = os.path.realpath(fn)
         bn = os.path.basename(fn)
-        nfn = os.path.join(ARCDIR, bn)
+        nfn = os.path.join(args.arc_dir, bn)
         if args.verbose:
             print 'mv %s %s'%(fn, nfn)
         if not args.dryrun:
