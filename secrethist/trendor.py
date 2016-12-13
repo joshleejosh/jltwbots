@@ -1,13 +1,17 @@
-import random, time
-import mru, locator, searcher
+import os.path, random, time
+import jltw.mru
+import locator, searcher
 
-MRU = 'trends'
-trend_mru = []
+WDIR = os.path.dirname(os.path.realpath(__file__))
+MRU_FN = os.path.join(WDIR, 'trends.mru')
+
+mru = None
 def load_trend_mru():
-    global trend_mru
-    trend_mru = mru.load_mru(MRU)
+    global mru
+    mru = jltw.mru.MRU(MRU_FN)
+    mru.load()
 def save_trend_mru(newword):
-    mru.save_mru(MRU, newword)
+    mru.save(newword)
 
 def find_trends(api, woeid=1):
     rv = []
@@ -15,7 +19,7 @@ def find_trends(api, woeid=1):
     time.sleep(1)
     for t in trends:
         #if t.name.startswith('#') and t.name not in trend_mru:
-        if not mru.in_mru(MRU, t.name):
+        if not t.name in mru:
             rv.append(t.name)
     if len(rv) == 0:
         print 'ERROR: no trends!'

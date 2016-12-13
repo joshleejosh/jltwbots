@@ -4,7 +4,7 @@ import argparse, time
 import random
 from collections import defaultdict
 import jltw
-import mru, locator, trendor, searcher, musher, htmarkov
+import locator, trendor, searcher, musher, htmarkov
 
 NUM_SAMPLE_WOES = 7
 NUM_SAMPLE_TRENDS = 3

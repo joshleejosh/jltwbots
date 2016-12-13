@@ -1,7 +1,9 @@
-import random, time
-import mru
+import os.path, random, time
+import jltw.mru
 
-MRU = 'locations'
+WDIR = os.path.dirname(os.path.realpath(__file__))
+MRU_FN = os.path.join(WDIR, 'locations.mru')
+
 WOEID_US = 23424977
 DEFAULT_WOE = {
         u'country': u'United States',
@@ -24,12 +26,13 @@ MOSTLY_ENGLISH_SPEAKING = (
 
 WOEIDS={}
 
-location_mru = []
+mru = None
 def load_location_mru():
-    global location_mru
-    location_mru = mru.load_mru(MRU)
+    global mru
+    mru = jltw.mru.MRU(MRU_FN)
+    mru.load()
 def save_location_mru(newid):
-    mru.save_mru(MRU, newid)
+    mru.save(newid)
 
 def _read_woes(api):
     url = '%s/trends/available.json' % (api.base_url)
@@ -50,7 +53,7 @@ def find_woes(api):
     woes = _read_woes(api)
     rv = []
     for woe in woes:
-        if woe['parentid'] in MOSTLY_ENGLISH_SPEAKING and not mru.in_mru(MRU, woe['woeid']):
+        if woe['parentid'] in MOSTLY_ENGLISH_SPEAKING and not woe['woeid'] in mru:
             rv.append(woe)
     if not rv:
         rv.append(DEFAULT_WOE)
