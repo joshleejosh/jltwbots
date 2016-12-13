@@ -1,5 +1,6 @@
 # encoding: utf-8
 import collections, random, unicodedata
+from util import *
 
 #print u'💪'.encode('unicode-escape')
 
@@ -78,20 +79,25 @@ def stalename(n):
 
 RETRIES = 20
 
+def isusable(o):
+    if o < 0x20 or o > 0xFFFF:
+        return False
+    u = unichr(o)
+    c = unicodedata.category(u)
+    if c[0] in ('C', 'Z'):
+        return False
+    n = unicodedata.name(u, '')
+    # ehhh, let's just not, okay?
+    if n.upper().find('SVASTI') != -1:
+        return False
+    return True
+
 def __pickem(f):
-    rv = unichr(0)
     for i in xrange(RETRIES):
         r = f()
-        u = unichr(r)
-        c = unicodedata.category(u)
-        if c[0] in ('C', 'Z'):
-            continue
-        n = unicodedata.name(u, '')
-        # ehhh, let's just not, okay?
-        if n.upper().find('SVASTI') != -1:
-            continue
-        return u
-    return rv
+        if isusable(r):
+            return unichr(r)
+    return unichr(0)
 
 # points is a list of codepoints
 def randchoice(points):

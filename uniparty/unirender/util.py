@@ -1,4 +1,4 @@
-import colorsys
+import colorsys, os.path
 
 def clamp(v, low, high):
     return min(high, max(low, v))
@@ -25,4 +25,7 @@ def f2h(f, width=2):
 def hsv_to_hex(h, s, v):
     r, g, b = colorsys.hsv_to_rgb(h, s, v)
     return '#%s%s%s'%(f2h(r), f2h(g), f2h(b))
+
+def basebase(fn):
+    return os.path.splitext(os.path.basename(fn))[0]
 

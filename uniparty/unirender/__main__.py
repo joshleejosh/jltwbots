@@ -6,20 +6,16 @@ from util import *
 
 VERBOSITY = 0
 WDIR = os.path.dirname(os.path.realpath(__file__))
-DDIR = os.path.join(WDIR, '..', 'out')
-MRU_FN = os.path.join(WDIR, '..', 'chars.mru')
 TEMPLATE_FN = os.path.join(WDIR, 'svgtemplate.xml')
-FONT_DIR = os.path.join(WDIR, '..', 'Noto-unhinted')
-
 
 def vlog(*args):
     if VERBOSITY > 0:
         print ' '.join((unicode(i) for i in args))
 
-def scrub_output():
-    for fn in glob.glob(DDIR+'/[0-9A-F][0-9A-F][0-9A-F][0-9A-F]_*.svg'):
+def scrub_output(odir):
+    for fn in glob.glob(odir+'/[0-9A-F][0-9A-F][0-9A-F][0-9A-F]_*.svg'):
         os.remove(fn)
-    for fn in glob.glob(DDIR+'/[0-9A-F][0-9A-F][0-9A-F][0-9A-F]_*.png'):
+    for fn in glob.glob(odir+'/[0-9A-F][0-9A-F][0-9A-F][0-9A-F]_*.png'):
         os.remove(fn)
 
 SVGTEMPLATE = ''
@@ -48,7 +44,7 @@ def adjust_color_value(iv, hx, amin, amax):
     vlog(iv, hv, rv)
     return rv
 
-def render_svg(u, fn, fontfn, hv):
+def render_svg(u, fn, fontfn, odir, hv):
     d = {
         'FFN' : fontfn,
         'CC1' : '#000000',
@@ -98,25 +94,25 @@ def render_svg(u, fn, fontfn, hv):
         #d['GCR'] = '%d%%'%int(100 * lerp(h2f(a[15]), 0.7667, 0.9333))
         vlog(d['GBX'], d['GBY'], d['GBR'], d['GCR'])
 
-    fn = os.path.join(DDIR, '%s.svg'%fn)
+    fn = os.path.join(odir, '%s.svg'%fn)
     svgdata = SVGTEMPLATE.replace(u'«THECHAR»', u)
     for k,v in d.iteritems():
         svgdata = svgdata.replace(u'«%s»'%k,v)
     with codecs.open(fn, 'w', encoding='utf-8') as fp:
         fp.write(svgdata)
 
-def convert_png(fn):
+def convert_png(fn, odir):
     # OPTION 1: Use quicklook to render a thumbnail of the SVG.
     # Assumes that Gapplin is installed and that its quicklook plugin is doing
     # the rendering. Run `qlmanage -m|grep -i svg` to check. Don't use the
     # default QL SVG renderer, it's terrible with text and fonts.
     # NB: QL thumbnails will always come out square.
-    #args = ('qlmanage', '-t', '-s', str(SZIMAGE), '-o', DDIR, DDIR+'/%s.svg'%fn)
+    #args = ('qlmanage', '-t', '-s', str(SZIMAGE), '-o', odir, odir+'/%s.svg'%fn)
 
     # OPTION 2: Use an Automator workflow to convert from SVG to PNG.
     # Assumes that Gapplin is installed and uses its Automator task for
     # conversion.
-    args = ('automator', '-i', DDIR+'/%s.svg'%fn, WDIR+'/../convertsvg.workflow')
+    args = ('automator', '-i', odir+'/%s.svg'%fn, WDIR+'/../convertsvg.workflow')
 
     if VERBOSITY > 1:
         subprocess.call(args)
@@ -127,7 +123,7 @@ def convert_png(fn):
         finally:
             os.remove(tfn)
 
-def render_char(u, ffn):
+def render_char(u, ffn, odir):
     if u == unichr(0):
         vlog('no char to render, shrug')
         return
@@ -141,26 +137,41 @@ def render_char(u, ffn):
     # hash the name to generate pseudorandom values for colors.
     nhash = hashlib.md5(n).hexdigest()
     fn = '%04X_%s'%(o, n)
-    render_svg(u, fn, ffn, nhash)
-    convert_png(fn)
+    render_svg(u, fn, ffn, odir, nhash)
+    convert_png(fn, odir)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('fontdir',
+            help='directory to find font files in')
+    parser.add_argument('outdir',
+            help='directory to put output files in')
     parser.add_argument('codes',
             nargs='*',
-            help='codepoints to look up. probably won\'t work without specifying a font')
+            help='codepoints to look up; probably won\'t work without specifying --font-file')
     parser.add_argument('-n', '--num-chars',
-            dest='numchars',
+            dest='totalchars',
             action='store',
             type=int,
             default=1,
-            help='number of chars to generate')
+            help='total number of chars to generate')
+    parser.add_argument('-p', '--per-font',
+            dest='perfont',
+            action='store',
+            type=int,
+            default=1,
+            help='number of chars to generate per font')
     parser.add_argument('-f', '--font-file',
             dest='fontfile',
             action='store',
             type=str,
             help='font to draw characters from')
+    parser.add_argument('-m', '--mru-file',
+            dest='mrufile',
+            action='store',
+            type=str,
+            help='mru list to check/maintain')
     parser.add_argument('-d', '--delete-old',
             dest='delold',
             action='store_true',
@@ -179,43 +190,57 @@ if __name__ == '__main__':
 
     VERBOSITY = args.verbose - args.quiet
     if args.delold:
-        scrub_output()
+        scrub_output(args.outdir)
 
     load_template()
-    mru = jltw.mru.MRU(MRU_FN)
-    mru.load()
+    mru = jltw.mru.MRU()
+    if args.mrufile:
+        mru = jltw.mru.MRU(args.mrufile)
+        mru.load()
 
-    ffn = ofn = ''
     a = []
     a.extend(((unichr(int(i,16)),args.fontfile) for i in args.codes))
+    args.totalchars -= len(a)
+    if args.fontfile:
+        args.perfont = args.totalchars
+
+    ffn = ofn = ''
     i = 0
-    while i < args.numchars:
+    while i < args.totalchars:
         if args.fontfile:
             ffn = args.fontfile
         else:
-            ffn = fontquery.random_font(FONT_DIR)
+            ffn = fontquery.random_font(args.fontdir)
 
+        # if we specified a single file or the random file picker is on a
+        # streak, don't reload all the data.
         if ffn != ofn:
-            fdata = fontquery.query_font(ffn)
-            points = [c[0] for c in fdata if c[0] > 0x1F and c[0] < 0x10000]
+            points = fontquery.query_font_prefiltered(ffn)
             if VERBOSITY > 2:
                 print ffn, fontquery.collate_codepoints(sorted(points))
             elif VERBOSITY > 0:
                 print ffn
         ofn = ffn
 
-        u = uniquery.randchoice(points)
-        if u == unichr(0):
-            vlog(u'Failed to find a useful character in [%s]'%ffn)
-        elif hex(ord(u)) in mru:
-            vlog(u'Char [%s][%X] is in mru'%(u, ord(u)))
-        else:
-            a.append((u,ffn))
-            i += 1
+        if not points:
+            vlog(u'Can\'t find any characters in [%s]'%ffn)
+            continue
+
+        j = 0
+        while j < args.perfont:
+            u = uniquery.randchoice(points)
+            if u == unichr(0):
+                vlog(u'Failed to find a useful character in [%s]'%ffn)
+            elif hex(ord(u)) in mru:
+                vlog(u'Char [%s][%X] is in mru'%(u, ord(u)))
+            else:
+                a.append((u,ffn))
+                mru.add(hex(ord(u)))
+                j += 1
+                i += 1
 
     for u,ffn in a:
-        render_char(u, os.path.realpath(ffn))
-        mru.add(hex(ord(u)))
+        render_char(u, os.path.realpath(ffn), args.outdir)
 
     mru.save()
 
