@@ -1,14 +1,17 @@
 # UNIPARTY: A party of Unicode characters
 
+Render random Unicode characters and post them to Twitter (see [@UnicodeParade|https://twitter.com/UnicodeParade]).
+
 There are three parts to this mess:
 
 ## uniparty.unirender – Generate SVGs from Unicode characters
 
 Has many (too many) requirements:
 
-* Python FontTools/TTX library (pip install it).
-* A directory full of fonts that render diverse Unicode blocks (e.g., Noto).
+* Python FontTools library.
+* A directory full of fonts that render diverse Unicode blocks (cf. the Google Noto project).
 * Gapplin for nice SVG rendering and PNG conversion.
+* Automator (incl. Gapplin's task) to do PNG conversion.
 
 Generation works in a few steps:
 
@@ -20,10 +23,13 @@ Generation works in a few steps:
 
 ## uniparty.uploader – Upload PNGs to server
 
+* Rsync PNGs up to a server.
+* Delete uploaded PNGs.
+* Move SVGs to an archive directory.
 
 ## uniparty.bot – Post PNGs to Twitter
 
-* Pick a PNG out of the directory.
+* Pick a random PNG out of the directory.
 * Post it!
 * Delete the PNG.
 
