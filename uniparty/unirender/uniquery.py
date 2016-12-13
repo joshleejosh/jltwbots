@@ -37,6 +37,7 @@ CATEGORIES.update({
     'Zp': 'Separator, Paragraph',
     'Zs': 'Separator, Space',
     })
+
 SUPERCATEGORIES = collections.defaultdict(str)
 SUPERCATEGORIES.update({
     'C': 'Other',

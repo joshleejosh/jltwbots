@@ -3,7 +3,7 @@ from itertools import chain
 from fontTools.ttLib import TTFont
 from fontTools.unicode import Unicode
 
-# Get supported code points from a font file.
+# Get supported code points out of a font file.
 # http://stackoverflow.com/a/19438403
 def query_font(fn):
     ttf = TTFont(fn, 0, allowVID=0, ignoreDecompileErrors=True, fontNumber=-1)
@@ -17,6 +17,7 @@ def random_font(dir):
     files = glob.glob(dir+'/*.ttf')
     return random.choice(files)
 
+# Turn a big list of values into a more friendly set of ranges.
 # http://stackoverflow.com/a/3430231
 # Assume the list is presorted.
 from itertools import count, groupby
