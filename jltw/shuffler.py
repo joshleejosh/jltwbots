@@ -1,7 +1,9 @@
+# encoding: utf-8
 # A very silly way to persist shuffled datasets, in order to maintain
 # distribution across runs of a program.
 
 import os.path, json, random, codecs
+import jltw
 
 class Shuffler:
     CHROFFSET = ord('A')
@@ -32,7 +34,7 @@ class Shuffler:
         if self.state.has_key(k) and self.state[k]:
             pass
         else:
-            #print 'reload %s'%k
+            #jltw.log('reload %s'%k)
             sa = []
             for i in xrange(len(a)):
                 sa.append(unichr(self.CHROFFSET + i))
@@ -52,10 +54,10 @@ class Shuffler:
             if i < len(a):
                 rv = a[i]
             else:
-                #print 'fail: not enough elements for %d in %s (%d: [%s])'%(i, k, len(a), a)
+                #jltw.log('fail: not enough elements for %d in %s (%d: [%s])'%(i, k, len(a), a))
                 rv = random.choice(a)
         else:
-            #print 'fail, shrug'
+            #jltw.log(u'¯\_(ツ)_/¯')
             rv = random.choice(a)
         return rv
 

@@ -1,4 +1,5 @@
 import os, os.path, argparse, glob, subprocess
+import jltw
 
 WDIR = os.path.dirname(os.path.realpath(__file__))
 ODIR = os.path.join(WDIR, '..', 'out')
@@ -12,7 +13,7 @@ def upload_files(src, dest, dryrun, verbose):
 
     files = glob.glob(src+'/*.png')
     if not files:
-        print 'Nothing to upload!'
+        jltw.log('Nothing to upload!')
         return
     for fn in files:
         pargs.append(fn)
@@ -43,7 +44,7 @@ if __name__ == '__main__':
     for fn in glob.glob(args.src_dir+'/*.png'):
         fn = os.path.realpath(fn)
         if args.verbose:
-            print 'rm %s'%(fn)
+            jltw.log('rm %s'%(fn))
         if not args.dryrun:
             os.remove(fn)
 
@@ -52,7 +53,7 @@ if __name__ == '__main__':
         bn = os.path.basename(fn)
         nfn = os.path.join(args.arc_dir, bn)
         if args.verbose:
-            print 'mv %s %s'%(fn, nfn)
+            jltw.log('mv %s %s'%(fn, nfn))
         if not args.dryrun:
             os.rename(fn, nfn)
 

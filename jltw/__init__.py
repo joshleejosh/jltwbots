@@ -2,6 +2,9 @@
 
 import json, twitter
 
+def log(*args):
+    print (u' '.join(map(unicode, args))).encode('utf-8')
+
 def open_twitter(authfn):
     fp = open(authfn)
     authd = json.load(fp)

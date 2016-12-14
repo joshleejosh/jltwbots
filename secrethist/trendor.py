@@ -1,7 +1,6 @@
 import os.path, random, time
 import jltw.mru
 import locator, searcher
-from secrethist import plog
 
 WDIR = os.path.dirname(os.path.realpath(__file__))
 MRU_FN = os.path.join(WDIR, 'trends.mru')
@@ -23,9 +22,9 @@ def find_trends(api, woeid=1):
         if not t.name in mru:
             rv.append(t.name)
     if len(rv) == 0:
-        plog('ERROR: no trends!')
+        jltw.log('ERROR: no trends!')
         return ''
-    #plog('%d Trends: %s'%(len(rv), ', '.join(rv))
+    #jltw.log('%d Trends: %s'%(len(rv), ', '.join(rv))
     return rv
 
 def find_trend(api, woeid=1):

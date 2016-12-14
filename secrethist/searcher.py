@@ -1,4 +1,5 @@
 import urllib, time, datetime
+import jltw
 
 def fetch_tweets(api, trend):
     te = trend.encode('utf-8')
@@ -13,7 +14,7 @@ def count_tweets(api, trend):
     time.sleep(1)
     ta = set()
     for tweet in tweets:
-        #print tweet.text.encode('utf-8')
+        #jltw.log(tweet.text)
         id = tweet.id
         if tweet.retweeted_status:
             id = tweet.retweeted_status.id
@@ -26,16 +27,16 @@ def build_sample(api, trend, samples, sampwait):
     td = {}
     for i in xrange(samples):
         tweets = fetch_tweets(api, trend)
-        print trend.encode('utf-8'), len(tweets), datetime.datetime.now()
+        jltw.log(trend, len(tweets), datetime.datetime.now())
         for tweet in tweets:
-            #print tweet.text.encode('utf-8')
+            #jltw.log(tweet.text)
             if tweet.retweeted_status:
                 td[tweet.retweeted_status.id] = tweet.retweeted_status
             else:
                 td[tweet.id] = tweet
         if i < samples-1:
             time.sleep(sampwait)
-    print 'Total unique tweets: %d'%len(td)
+    jltw.log('Total unique tweets: %d'%len(td))
     time.sleep(1)
 
     rv = []

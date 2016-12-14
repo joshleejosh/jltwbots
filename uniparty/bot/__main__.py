@@ -12,7 +12,7 @@ mru = None
 
 def vlog(*args):
     if VERBOSE:
-        print ' '.join((unicode(i).encode('utf-8') for i in args))
+        jltw.log(' '.join((unicode(i).encode('utf-8') for i in args)))
 
 def pick_file(dir):
     files = glob.glob(dir+'/*.png')
@@ -33,7 +33,7 @@ def make_text(fn):
 def del_file(fn):
     if not DRYRUN:
         if VERBOSE:
-            print 'rm %s'%fn
+            jltw.log('rm %s'%fn)
         os.remove(fn)
 
 if __name__ == '__main__':
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     if not fn:
         fn = pick_file(args.srcdir)
         if not fn:
-            print 'FAILURE: No images to upload!'
+            jltw.log('FAILURE: No images to upload!')
             exit(0)
         for retryi in xrange(RETRIES):
             fn = os.path.realpath(fn)
@@ -84,7 +84,7 @@ if __name__ == '__main__':
                 break
 
     text = make_text(fn)
-    print text.encode('utf-8')
+    jltw.log(text)
 
     if not DRYRUN:
         if args.tweet:

@@ -55,7 +55,7 @@ def chain():
 def spew(tweets, trend):
     read_text(tweets)
     #a = list(i for i in CACHE.values() if len(i) > 1)
-    #print len(a), len(CACHE)
+    #jltw.log(len(a), len(CACHE))
 
     preamble = '%s: '%trend
     rv = ''

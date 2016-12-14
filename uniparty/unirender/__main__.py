@@ -1,6 +1,6 @@
 # encoding: utf-8
 import os, os.path, argparse, glob, unicodedata, codecs, hashlib, subprocess, tempfile
-import jltw.mru
+import jltw, jltw.mru
 import uniquery, fontquery
 from util import *
 
@@ -10,7 +10,7 @@ TEMPLATE_FN = os.path.join(WDIR, 'svgtemplate.xml')
 
 def vlog(*args):
     if VERBOSITY > 0:
-        print ' '.join((unicode(i) for i in args))
+        jltw.log(args)
 
 def scrub_output(odir):
     for fn in glob.glob(odir+'/*.svg'):
@@ -132,7 +132,7 @@ def render_char(u, ffn, odir):
     o = wideord(u)
     scat = uniquery.SUPERCATEGORIES[unicodedata.category(u)[0]]
     if VERBOSITY >= 0:
-        print u'\t%s\t%04X\t%2s\t%s'%(u, o, scat, n)
+        jltw.log(u'\t%s\t%04X\t%2s\t%s'%(u, o, scat, n))
 
     # hash the name to generate pseudorandom values for colors.
     nhash = hashlib.md5(n).hexdigest()
@@ -223,20 +223,20 @@ if __name__ == '__main__':
         if ffn != ofn:
             points = fontquery.query_font_prefiltered(ffn)
             if VERBOSITY > 2:
-                print ffn, fontquery.collate_codepoints(sorted(points))
+                jltw.log(ffn, fontquery.collate_codepoints(sorted(points)))
             elif VERBOSITY > 0:
-                print ffn
+                jltw.log(ffn)
         ofn = ffn
 
         if not points:
-            print u'Can\'t find any characters in [%s]'%ffn
+            jltw.log(u'Can\'t find any characters in [%s]'%ffn)
             continue
 
         j = 0
         while j < args.perfont:
             u = uniquery.randchoice(points)
             if u == widechr(0):
-                print u'Failed to find a useful character in [%s]'%ffn
+                jltw.log(u'Failed to find a useful character in [%s]'%ffn)
             elif hex(wideord(u)) in mru:
                 vlog(u'Char [%s][%X] is in mru'%(u, wideord(u)))
             else:

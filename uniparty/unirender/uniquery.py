@@ -1,8 +1,9 @@
 # encoding: utf-8
 import collections, random, unicodedata
 from util import *
+import jltw
 
-#print u'💪'.encode('unicode-escape')
+#jltw.log(u'💪'.encode('unicode-escape'))
 
 CATEGORIES = collections.defaultdict(str)
 CATEGORIES.update({
@@ -51,19 +52,18 @@ SUPERCATEGORIES.update({
     })
 
 def dump():
-    for i in xrange(0, 0x10000):
+    for i in xrange(0, 0x10FFFF):
         c = widechr(i)
         n = unicodedata.name(c, '')
         cat = unicodedata.category(c)
-        catcounts[cat] += 1
         # control characters aren't printable
         if cat.startswith('C'):
             c = u' '
         # combine with space for printing
         if unicodedata.combining(c) != 0:
             c = u' %s'%c
-        if cat in ('Zl', 'Zp', 'Zs',):
-            print '%06x: %s: %s / %s'%(i, c, n, cat)
+        if cat in ('Zl', 'Zp', 'Zs', 'Sm'):
+            jltw.log('%06x: %s: %s / %s'%(i, c, n, cat))
 
 # These names take up huge chunks of the code space.
 STALENAMES = (
@@ -105,4 +105,7 @@ def randchoice(points):
 
 def randrange(umin=0x0020, umax=0x10000):
     return __pickem(lambda: random.randrange(umin, umax))
+
+if __name__ == '__main__':
+    dump()
 

@@ -30,7 +30,7 @@ if __name__ == '__main__':
         s = gizer.generate()
         if args.tweet:
             api.PostUpdate(s)
-        print s.decode('utf-8')
+        jltw.log(s)
 
     shuffler.save()
 

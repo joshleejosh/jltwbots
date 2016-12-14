@@ -37,6 +37,7 @@ blank (instead of 1/len(list)).
 """
 
 import os, random, re, copy
+import jltw
 
 KEY_ROOT = "*"
 KEY_INCLUDE = "*include"
@@ -206,7 +207,7 @@ def main(gfn, sfn, n):
         'SUBJECT': [ 'mouse', 'cat', 'dog', 'elephant', 'iguana' ],
         'verb': [ 'ate', 'chased', 'hugged', 'played with' ],
         'Adjective': [ 'effin\'', 'freakin\'' ],
-        'ObJeCt': [ '👻' , 'FOAM BALL', 'ostrich egg', 'wooden stick', 'oak leaf', '«speeding ambulance»', 'radio telescope' ],
+        'ObJeCt': [ u'👻' , 'FOAM BALL', 'ostrich egg', 'wooden stick', 'oak leaf', u'«speeding ambulance»', 'radio telescope' ],
         'punctuation': [ '!', '?', '.', '.'],
         'coda': 'That {subject} sure {verb} it{punctuation}',
     }
@@ -221,7 +222,7 @@ def main(gfn, sfn, n):
 
     gizer = Grammarizer(grammar, sh, wdir)
     for i in xrange(n):
-        print gizer.generate()
+        jltw.log(gizer.generate())
     if sfn:
         sh.save()
 

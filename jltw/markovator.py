@@ -1,5 +1,6 @@
 import argparse, json, random, xml.sax.saxutils, codecs
 from collections import defaultdict, deque
+import jltw
 
 CACHE_DELIM = '\v'
 TERMINATOR = '\f'
@@ -29,10 +30,10 @@ class Markovator:
         for o,c in opts.iteritems():
             top += c
             if top >= pik:
-                #print 'picked from [%s][%s]: [%d] [%d] [%d] -> [%s]'%(t, opts, tot, pik, top, o)
+                #jltw.log('picked from [%s][%s]: [%d] [%d] [%d] -> [%s]'%(t, opts, tot, pik, top, o))
                 return o
         # shouldn't get here
-        print 'ERROR: couldn\'t pick from [%s][%s]: [%d] [%d] [%d]'%(t, opts, tot, pik, top)
+        jltw.log('ERROR: couldn\'t pick from [%s][%s]: [%d] [%d] [%d]'%(t, opts, tot, pik, top))
         return random.choice(opts.keys()) # panic pick
 
     def chain(self):
@@ -68,5 +69,5 @@ if __name__ == '__main__':
     fp.close()
     m = Markovator((s.strip().split() for s in sentences))
     for i in xrange(args.num):
-        print ' '.join(m.generate())
+        jltw.log(u' '.join(m.generate()))
 

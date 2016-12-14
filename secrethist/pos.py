@@ -2,6 +2,7 @@
 import os.path, random, re, codecs
 from collections import defaultdict
 import nltk
+import jltw
 
 WDIR = os.path.dirname(os.path.realpath(__file__))
 nltk.data.path.insert(0, os.path.join(WDIR, '..', 'botenv', 'nltk_data'))
@@ -31,7 +32,7 @@ def floop(wordlist):
             posbuckets[pos].append(word)
 
     for pos,words in posbuckets.iteritems():
-        print pos, ' '.join(words).encode('utf-8')
+        jltw.log(pos, ' '.join(words))
 
     if posbuckets['ADJECTIVE']:
         quality = caseify(random.choice(posbuckets['ADJECTIVE']))
@@ -57,7 +58,7 @@ def munge(sentences):
             if word not in buckets[pos]:
                 buckets[pos].append(word)
     for pos,words in buckets.iteritems():
-        print pos, ' '.join(words).encode('utf-8')
+        jltw.log(pos, ' '.join(words))
 
 
 

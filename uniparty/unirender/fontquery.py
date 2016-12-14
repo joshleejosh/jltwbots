@@ -19,7 +19,7 @@ def query_font(fn):
     rv = []
     ttf = TTFont(fn, 0, allowVID=0, ignoreDecompileErrors=True, fontNumber=-1)
     try:
-        #print ttf['name'].names[1]
+        #jltw.log(ttf['name'].names[1])
         chars = chain.from_iterable([y + (Unicode[y[0]],) for y in x.cmap.items()] for x in ttf["cmap"].tables)
         rv = list(chars)
     finally:
@@ -81,7 +81,7 @@ def dump_catalog(dir):
     for fn in sorted(glob.glob(dir+'/*.[to]tf')):
         fn = os.path.realpath(fn)
         a = query_font_prefiltered(fn)
-        print '%s\t%d\t%s'%(basebase(fn), len(a), collate_codepoints(a))
+        jltw.log('%s\t%d\t%s'%(basebase(fn), len(a), collate_codepoints(a)))
 
 if __name__ == '__main__':
     import os.path, collections

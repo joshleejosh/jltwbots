@@ -1,6 +1,5 @@
 import os.path, random, time
-import jltw.mru
-from secrethist import plog
+import jltw
 
 WDIR = os.path.dirname(os.path.realpath(__file__))
 MRU_FN = os.path.join(WDIR, 'locations.mru')
@@ -58,18 +57,23 @@ def find_woes(api):
             rv.append(woe)
     if not rv:
         rv.append(DEFAULT_WOE)
-    #plog(' '.join((i['name'] for i in candidates)))
+    #jltw.log(' '.join((i['name'] for i in candidates)))
     return rv
 
 def pick_woe(api):
     candidates = find_woes(api)
     rv = random.choice(candidates)
-    plog(rv['name'], rv['woeid'])
+    jltw.log(rv['name'], rv['woeid'])
     return rv
 
 def dump_woeids(api):
     woes = _read_woes(api)
     for woe in woes:
         if woe['countryCode'] == 'US':
-            print '%s, %s (%s)'%(woe['name'], woe['country'], woe['woeid'])
+            jltw.log(woe['name'], woe['country'], woe['woeid'])
+
+if __name__ == '__main__':
+    import sys
+    api = jltw.open_twitter(sys.argv[1])
+    dump_woeids(api)
 

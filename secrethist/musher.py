@@ -1,7 +1,6 @@
 import os.path, random, unicodedata, codecs
 from collections import defaultdict
 import jltw.mru
-from secrethist import plog
 
 WDIR = os.path.dirname(os.path.realpath(__file__))
 MRU_FN = os.path.join(WDIR, 'topics.mru')
@@ -137,7 +136,7 @@ def collate_word_counts(words, trend):
     for c in sorted(rv.keys()):
         rv[c].sort()
         s = ' '.join(rv[c])
-        plog('%d: %s'%(c, s))
+        jltw.log('%d: %s'%(c, s))
     return rv
 
 # turn dict of words into an array sorted by length descending.
@@ -150,7 +149,7 @@ def filter_buckets(buckets):
         subbucketb = []
         for w in buckets[c]:
             if w in mru:
-                #print 'stale topic: %s'%w
+                #jltw.log('stale topic: %s'%w)
                 continue
             if w[0].islower():
                 subbucketb.append(w)
@@ -207,7 +206,7 @@ def secret_history(tweets, trend, location):
     words = split_tweets(tweets, trend, location)
     buckets = collate_word_counts(words, trend)
     filtered = filter_buckets(buckets)
-    #plog(len(filtered), ' '.join(filtered))
+    #jltw.log(len(filtered), ' '.join(filtered))
 
     quality = 'Secret'
 
@@ -216,7 +215,7 @@ def secret_history(tweets, trend, location):
     n = min(len(filtered)/2, NUM_TOPICS*3)
     candidates = filtered[0:n]
 
-    #plog(len(candidates), ', '.join(candidates))
+    #jltw.log(len(candidates), ', '.join(candidates))
     random.shuffle(candidates)
     topics = candidates[0:NUM_TOPICS]
     ts = listify(topics)
@@ -230,10 +229,10 @@ def secret_history(tweets, trend, location):
     return rv
 
 if __name__ == '__main__':
-    print listify(['foo'])
-    print listify(['foo','Bar'])
-    print listify(['foo','Bar','BAZ'])
-    print listify(['foo','Bar','BAZ','qUx'])
-    print listify(['foo','Bar','BAZ','qUx','guh'])
-    print listify(['foo','Bar','BAZ','qUx','guh','hmm'])
+    jltw.log(listify(['foo']))
+    jltw.log(listify(['foo','Bar']))
+    jltw.log(listify(['foo','Bar','BAZ']))
+    jltw.log(listify(['foo','Bar','BAZ','qUx']))
+    jltw.log(listify(['foo','Bar','BAZ','qUx','guh']))
+    jltw.log(listify(['foo','Bar','BAZ','qUx','guh','hmm']))
 

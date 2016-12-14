@@ -26,7 +26,7 @@ def is_tweetable(a):
     su = s.upper()
     hits = list(t for t in CORPUS if t.upper().find(su) != -1)
     if hits:
-        print 'OMG DUPLICATED ORIGINAL: [%s] [%s]'%([s,], hits)
+        jltw.log('OMG DUPLICATED ORIGINAL', [s,], hits)
         return False
     return True
 
@@ -63,5 +63,5 @@ if __name__ == '__main__':
 
         if s and args.tweet:
             api.PostUpdate(s)
-        print s.encode('utf-8')
+        jltw.log(s)
 
