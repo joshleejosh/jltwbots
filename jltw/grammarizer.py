@@ -36,7 +36,7 @@ blank (instead of 1/len(list)).
 
 """
 
-import os, random, re, copy
+import os, random, re, copy, unicodedata
 import jltw
 
 KEY_ROOT = "*"
@@ -95,14 +95,14 @@ class Grammarizer(object):
                 if self.grammar.has_key(k):
                     a = self.grammar[k]
                     if hasattr(a, '__iter__'):
-                        self.grammar[k] = self.replace_tokens(k, a)
+                        self.grammar[k] = self._replace_tokens(k, a)
 
-        rv = self.replace_tokens(KEY_ROOT, self.grammar[KEY_ROOT])
+        rv = self._replace_tokens(KEY_ROOT, self.grammar[KEY_ROOT])
         if self.doAAnReplacement:
-            rv = self.replace_aan(rv)
+            rv = self._replace_aan(rv)
         return rv
 
-    def replace_tokens(self, key, ins):
+    def _replace_tokens(self, key, ins):
         if isinstance(ins, basestring):
             for match in reversed(list(RE_TOKEN.finditer(ins))):
                 mkey = match.group(1).strip()
@@ -124,13 +124,13 @@ class Grammarizer(object):
                         a = ""
                     if addblank and not isinstance(a, basestring):
                         a.append('')
-                    repl = self.replace_tokens(mkey, a)
-                repl = self.caseify(mkey, repl)
+                    repl = self._replace_tokens(mkey, a)
+                repl = self._caseify(mkey, repl)
 
                 # if we're replacing with an empty string, make sure we
                 # don't leave stray spaces in its wake.
                 if not repl:
-                    ins = self.squeeze_blank(ins, match.start(), match.end())
+                    ins = self._squeeze_blank(ins, match.start(), match.end())
                 else:
                     ins = ins[0:match.start()] + repl + ins[match.end():]
 
@@ -142,12 +142,12 @@ class Grammarizer(object):
                 v = self.shuffler.choice(key.lower(), ins)
             else:
                 v = random.choice(ins)
-            return self.replace_tokens(key, v)
+            return self._replace_tokens(key, v)
 
         else:
             return ins
 
-    def squeeze_blank(self, ins, si, ei):
+    def _squeeze_blank(self, ins, si, ei):
         repl = ''
         if si == 0:
             while ei<len(ins) and ins[ei].isspace():
@@ -165,7 +165,7 @@ class Grammarizer(object):
         ins = ins[0:si] + repl + ins[ei:]
         return ins
 
-    def replace_aan(self, s):
+    def _replace_aan(self, s):
         # a/an replacement
         for m in reversed(list(RE_AAN.finditer(s))):
             # scan to the next letter.
@@ -174,16 +174,19 @@ class Grammarizer(object):
                 c = s[i]
                 if c.isalpha() or c.isdigit():
                     break
-            # if it's a vowel, replace the token with AN, otherwise A.
+            # if it's a latin vowel, replace the token with AN, otherwise A.
             article = 'a'
-            if c and c.lower() in 'aeiou':
-                article = 'an'
-            article = self.caseify(m.group(), article)
+            if c and c.isalpha():
+                c = unicode(c)
+                c = unicodedata.normalize('NFD', c)[0] # try to strip accents
+                if c.lower() in 'aeiou':
+                    article = 'an'
+            article = self._caseify(m.group(), article)
             s = s[0:m.start()] + article + s[m.end():]
         return s
 
     # Based on the capitalization of src, change tgt to match.
-    def caseify(self, src, tgt):
+    def _caseify(self, src, tgt):
         src = src.strip().strip('{}')
         rv = tgt
         firstLetter = -1
@@ -212,12 +215,12 @@ def main(gfn, sfn, n):
         'coda': 'That {subject} sure {verb} it{punctuation}',
     }
     wdir = os.getcwd()
-    if gfn:
+    if gfn.strip():
         fp = codecs.open(gfn, encoding='utf-8')
         grammar = json.load(fp)
         wdir = os.path.dirname(os.path.realpath(gfn))
         fp.close()
-    if sfn:
+    if sfn.strip():
         sh.load(sfn)
 
     gizer = Grammarizer(grammar, sh, wdir)

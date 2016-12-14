@@ -66,6 +66,8 @@ class ShufflerTest(unittest.TestCase):
         with codecs.open(self.tfn, 'r', encoding='utf-8') as fp:
             rs = fp.read()
             # we don't know the exact order of the string, but we know how long it is, including json formatting.
+            if len(rs) != 382:
+                print v, w, rs
             self.assertEqual(len(rs), 382)
 
         # reload the file into a new Shuffler instance. All the data should be the same.
