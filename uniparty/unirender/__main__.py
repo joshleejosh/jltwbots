@@ -13,9 +13,9 @@ def vlog(*args):
         print ' '.join((unicode(i) for i in args))
 
 def scrub_output(odir):
-    for fn in glob.glob(odir+'/[0-9A-F][0-9A-F][0-9A-F][0-9A-F]_*.svg'):
+    for fn in glob.glob(odir+'/*.svg'):
         os.remove(fn)
-    for fn in glob.glob(odir+'/[0-9A-F][0-9A-F][0-9A-F][0-9A-F]_*.png'):
+    for fn in glob.glob(odir+'/*.png'):
         os.remove(fn)
 
 SVGTEMPLATE = ''
@@ -124,12 +124,12 @@ def convert_png(fn, odir):
             os.remove(tfn)
 
 def render_char(u, ffn, odir):
-    if u == unichr(0):
+    if u == widechr(0):
         vlog('no char to render, shrug')
         return
 
     n = unicodedata.name(u, '')
-    o = ord(u)
+    o = wideord(u)
     scat = uniquery.SUPERCATEGORIES[unicodedata.category(u)[0]]
     if VERBOSITY >= 0:
         print u'\t%s\t%04X\t%2s\t%s'%(u, o, scat, n)
@@ -205,7 +205,7 @@ if __name__ == '__main__':
         mru.load()
 
     a = []
-    a.extend(((unichr(int(i,16)),args.fontfile) for i in args.codes))
+    a.extend(((widechr(int(i,16)),args.fontfile) for i in args.codes))
     args.totalchars -= len(a)
     if args.fontfile:
         args.perfont = args.totalchars
@@ -235,13 +235,13 @@ if __name__ == '__main__':
         j = 0
         while j < args.perfont:
             u = uniquery.randchoice(points)
-            if u == unichr(0):
+            if u == widechr(0):
                 print u'Failed to find a useful character in [%s]'%ffn
-            elif hex(ord(u)) in mru:
-                vlog(u'Char [%s][%X] is in mru'%(u, ord(u)))
+            elif hex(wideord(u)) in mru:
+                vlog(u'Char [%s][%X] is in mru'%(u, wideord(u)))
             else:
                 a.append((u,ffn))
-                mru.add(hex(ord(u)))
+                mru.add(hex(wideord(u)))
                 j += 1
                 i += 1
 

@@ -29,3 +29,22 @@ def hsv_to_hex(h, s, v):
 def basebase(fn):
     return os.path.splitext(os.path.basename(fn))[0]
 
+# Get the Unicode codepoint for a single character and/or fullwidth surrogate pair.
+# http://unicodebook.readthedocs.io/unicode_encodings.html
+def wideord(c):
+    if len(c) == 2 and (0xD800 <= ord(c[0]) <= 0xDBFF) and (0xDC00 <= ord(c[1]) <= 0xDFFF):
+        oh = (ord(c[0]) & 0x03FF) << 10
+        ol = (ord(c[1]) & 0x03FF)
+        return 0x10000 + oh + ol
+    else:
+        return ord(c)
+
+# Get the Unicode character for a codepoint, including fullwidth values above 0xFFFF.
+def widechr(i):
+    if i < 0x10000:
+        return unichr(i)
+    i -= 0x10000
+    ch = (i >> 10) | 0xD800
+    cl = (i & 0x3FF) | 0xDC00
+    return unichr(ch) + unichr(cl)
+

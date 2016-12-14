@@ -52,7 +52,7 @@ SUPERCATEGORIES.update({
 
 def dump():
     for i in xrange(0, 0x10000):
-        c = unichr(i)
+        c = widechr(i)
         n = unicodedata.name(c, '')
         cat = unicodedata.category(c)
         catcounts[cat] += 1
@@ -80,9 +80,9 @@ def stalename(n):
 RETRIES = 20
 
 def isusable(o):
-    if o < 0x20 or o > 0xFFFF:
+    if o < 0x20:
         return False
-    u = unichr(o)
+    u = widechr(o)
     c = unicodedata.category(u)
     if c[0] in ('C', 'Z'):
         return False
@@ -96,8 +96,8 @@ def __pickem(f):
     for i in xrange(RETRIES):
         r = f()
         if isusable(r):
-            return unichr(r)
-    return unichr(0)
+            return widechr(r)
+    return widechr(0)
 
 # points is a list of codepoints
 def randchoice(points):

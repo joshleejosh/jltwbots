@@ -70,11 +70,12 @@ def collate_codepoints(a):
     # If there's only one value in each group, only return it, otherwise return
     # the first and last values, which are joined with a dash.
     # Also convert to hex somewhere along the way.
-    u = ((i[0],i[-1])[:2] for i in t)
+    u = ((i[0],i[-1])[:len(i)] for i in t)
     v = (map(hex, i) for i in u)
     x = ('-'.join(i) for i in v)
     y = ','.join(x)
     return y
+
 
 def dump_catalog(dir):
     for fn in sorted(glob.glob(dir+'/*.[to]tf')):
@@ -85,7 +86,5 @@ def dump_catalog(dir):
 if __name__ == '__main__':
     import os.path, collections
     dir = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'Noto-unhinted'))
-    #dump_catalog(dir)
-    for i in xrange(90):
-        print random_font(dir)
+    dump_catalog(dir)
 
