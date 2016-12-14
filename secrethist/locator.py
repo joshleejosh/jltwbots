@@ -1,5 +1,6 @@
 import os.path, random, time
 import jltw.mru
+from secrethist import plog
 
 WDIR = os.path.dirname(os.path.realpath(__file__))
 MRU_FN = os.path.join(WDIR, 'locations.mru')
@@ -57,13 +58,13 @@ def find_woes(api):
             rv.append(woe)
     if not rv:
         rv.append(DEFAULT_WOE)
-    #print ' '.join((i['name'] for i in candidates)).encode('utf-8')
+    #plog(' '.join((i['name'] for i in candidates)))
     return rv
 
 def pick_woe(api):
     candidates = find_woes(api)
     rv = random.choice(candidates)
-    print rv['name'], rv['woeid']
+    plog(rv['name'], rv['woeid'])
     return rv
 
 def dump_woeids(api):

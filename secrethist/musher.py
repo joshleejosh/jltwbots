@@ -1,6 +1,7 @@
 import os.path, random, unicodedata, codecs
 from collections import defaultdict
 import jltw.mru
+from secrethist import plog
 
 WDIR = os.path.dirname(os.path.realpath(__file__))
 MRU_FN = os.path.join(WDIR, 'topics.mru')
@@ -136,7 +137,7 @@ def collate_word_counts(words, trend):
     for c in sorted(rv.keys()):
         rv[c].sort()
         s = ' '.join(rv[c])
-        print '%d: %s'%(c, s.encode('utf-8'))
+        plog('%d: %s'%(c, s))
     return rv
 
 # turn dict of words into an array sorted by length descending.
@@ -206,7 +207,7 @@ def secret_history(tweets, trend, location):
     words = split_tweets(tweets, trend, location)
     buckets = collate_word_counts(words, trend)
     filtered = filter_buckets(buckets)
-    #print len(filtered), ' '.join(filtered).encode('utf-8')
+    #plog(len(filtered), ' '.join(filtered))
 
     quality = 'Secret'
 
@@ -215,7 +216,7 @@ def secret_history(tweets, trend, location):
     n = min(len(filtered)/2, NUM_TOPICS*3)
     candidates = filtered[0:n]
 
-    #print len(candidates), ', '.join(candidates).encode('utf-8')
+    #plog(len(candidates), ', '.join(candidates))
     random.shuffle(candidates)
     topics = candidates[0:NUM_TOPICS]
     ts = listify(topics)
