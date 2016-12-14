@@ -6,15 +6,12 @@ import jltw.shuffler
 import uniquery
 from util import *
 
-SHUFFLE_FN = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'fonts.shuffle')
+_shuf_fn = ''
+_shuf = None
 
-# Lots of fonts contain ASCII chars for compatibility, but we only want them from
-# the basic latin fonts.
-ASCIIFONTS = (
-        'NotoSerif-Regular',
-        'NotoSans-Regular',
-        'NotoMono-Regular',
-        )
+# Lots of fonts contain ASCII chars for compatibility, but we only want them
+# from the fonts that we want them from, y'know what I mean?
+ASCIIFONTS = ( 'NotoSerif-Regular', 'NotoSans-Regular', 'NotoMono-Regular', )
 
 # Get supported code points out of a font file.
 # http://stackoverflow.com/a/19438403
@@ -45,11 +42,19 @@ def _filter_char(o, fn):
     return uniquery.isusable(o)
 
 def random_font(dir):
-    sh = jltw.shuffler.load(SHUFFLE_FN)
-    files = glob.glob(dir+'/*.[to]tf')
-    rv = sh.choice('f', files)
-    sh.save()
+    global _shuf
+    if not _shuf:
+        _shuf = jltw.shuffler.load(_shuf_fn)
+    files = sorted(glob.glob(dir+'/*.[to]tf'))
+    rv = _shuf.choice('f', files)
+    _shuf.save()
     return rv
+
+def set_shuffler(fn):
+    global _shuf_fn
+    if fn:
+        fn = os.path.realpath(fn)
+    _shuf_fn = fn
 
 # Turn a big list of values into a more friendly set of ranges.
 # http://stackoverflow.com/a/3430231

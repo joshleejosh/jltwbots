@@ -167,11 +167,16 @@ if __name__ == '__main__':
             action='store',
             type=str,
             help='font to draw characters from')
-    parser.add_argument('-m', '--mru-file',
+    parser.add_argument('-m', '--mru',
             dest='mrufile',
             action='store',
             type=str,
             help='mru list to check/maintain')
+    parser.add_argument('-s', '--shuffle',
+            dest='shufflefile',
+            action='store',
+            type=str,
+            help='shuffler file for font choosing')
     parser.add_argument('-d', '--delete-old',
             dest='delold',
             action='store_true',
@@ -193,6 +198,7 @@ if __name__ == '__main__':
         scrub_output(args.outdir)
 
     load_template()
+    fontquery.set_shuffler(args.shufflefile)
     mru = jltw.mru.MRU()
     if args.mrufile:
         mru = jltw.mru.MRU(args.mrufile)
@@ -223,14 +229,14 @@ if __name__ == '__main__':
         ofn = ffn
 
         if not points:
-            vlog(u'Can\'t find any characters in [%s]'%ffn)
+            print u'Can\'t find any characters in [%s]'%ffn
             continue
 
         j = 0
         while j < args.perfont:
             u = uniquery.randchoice(points)
             if u == unichr(0):
-                vlog(u'Failed to find a useful character in [%s]'%ffn)
+                print u'Failed to find a useful character in [%s]'%ffn
             elif hex(ord(u)) in mru:
                 vlog(u'Char [%s][%X] is in mru'%(u, ord(u)))
             else:

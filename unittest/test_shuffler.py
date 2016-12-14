@@ -41,9 +41,16 @@ class ShufflerTest(unittest.TestCase):
         self.assertEqual(len(s.state), 1)
         self.assertEqual(len(s.state['test']), 299)
 
-        # calling load or save without a filename should safely nop.
+        # calling load or save without a filename should cleanly nop.
         s.load('')
         s.save()
+
+    def test_badfile(self):
+        s = jltw.shuffler.Shuffler()
+        v = s.choice('test', self.data2)
+        ostate = s.state['test']
+        s.load(None) # should safely nop and not touch anything.
+        self.assertEqual(ostate, s.state['test'])
 
     def test_persistence(self):
         # load an empty shuffler

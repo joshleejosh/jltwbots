@@ -15,7 +15,7 @@ floorisx/floorisx_shuffle.json
 uniparty/Noto-unhinted
 uniparty/out
 uniparty/arc
-uniparty/unirender/fonts.shuffle
+uniparty/fonts.shuffle
 
 *.tmp
 .DS_Store

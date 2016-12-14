@@ -1,7 +1,7 @@
 # A very silly way to persist shuffled datasets, in order to maintain
 # distribution across runs of a program.
 
-import os.path, json, random, codecs, io
+import os.path, json, random, codecs
 
 class Shuffler:
     CHROFFSET = ord('A')
@@ -12,14 +12,12 @@ class Shuffler:
 
     def load(self, fn):
         self.filename = fn
-        if os.path.exists(self.filename):
-            fp = io.open(self.filename, encoding='utf-8')
-            try:
-                self.state = json.load(fp)
-            except Exception as e:
-                print e
-                pass
-            fp.close()
+        if not self.filename:
+            return
+        if not os.path.exists(self.filename):
+            return
+        with codecs.open(self.filename, encoding='utf-8') as fp:
+            self.state = json.load(fp)
 
     def save(self, fn=None):
         if fn:
