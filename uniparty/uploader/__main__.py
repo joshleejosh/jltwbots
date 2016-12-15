@@ -1,5 +1,7 @@
+# encoding: utf-8
 import os, os.path, argparse, glob, subprocess
 import jltw
+from uniparty.unirender.util import wideord, widechr
 
 WDIR = os.path.dirname(os.path.realpath(__file__))
 ODIR = os.path.join(WDIR, '..', 'out')
@@ -39,12 +41,28 @@ if __name__ == '__main__':
             help='extra debug spam')
     args = parser.parse_args()
 
+    for fn in glob.glob(args.src_dir+'/*.png'):
+        fn = os.path.realpath(fn)
+        dir = os.path.dirname(fn)
+        bn, ext = os.path.splitext(os.path.basename(fn))
+
+        if '_' in bn:
+            x, n = bn.split('_')
+            c = widechr(int(x, 16))
+            un = u'%s – %s (%s)'%(c, n, x)
+            nn = os.path.join(dir, un+ext)
+
+            if args.verbose:
+                jltw.log(u'mv %s %s'%(fn.decode('utf-8'), nn.decode('utf-8')))
+            if not args.dryrun:
+                os.rename(fn, nn)
+
     upload_files(args.src_dir, args.remote_dest, args.dryrun, args.verbose)
 
     for fn in glob.glob(args.src_dir+'/*.png'):
         fn = os.path.realpath(fn)
         if args.verbose:
-            jltw.log('rm %s'%(fn))
+            jltw.log(u'rm %s'%fn.decode('utf-8'))
         if not args.dryrun:
             os.remove(fn)
 
@@ -53,7 +71,7 @@ if __name__ == '__main__':
         bn = os.path.basename(fn)
         nfn = os.path.join(args.arc_dir, bn)
         if args.verbose:
-            jltw.log('mv %s %s'%(fn, nfn))
+            jltw.log(u'mv %s %s'%(fn.decode('utf-8'), nfn.decode('utf-8')))
         if not args.dryrun:
             os.rename(fn, nfn)
 
