@@ -53,7 +53,7 @@ if __name__ == '__main__':
             nn = os.path.join(dir, un+ext)
 
             if args.verbose:
-                jltw.log(u'mv %s %s'%(fn.decode('utf-8'), nn.decode('utf-8')))
+                jltw.log(u'mv %s %s'%(fn, nn))
             if not args.dryrun:
                 os.rename(fn, nn)
 
