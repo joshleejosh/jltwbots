@@ -27,7 +27,7 @@ Generation works in a few steps:
 * Delete uploaded PNGs.
 * Move SVGs to an archive directory.
 
-## uniparty.bot – Post PNGs to Twitter
+## imgposter – Post PNGs to Twitter
 
 * Pick a random PNG out of the directory.
 * Post it!

@@ -43,18 +43,23 @@ class MRUTest(unittest.TestCase):
         m.resize(3)
         self.assertEqual(unicode(m), u'd e f')
 
-    def test_load(self):
+    def test_load_save_unicode(self):
         with codecs.open(self.tfn, 'w', encoding='utf-8') as fp:
-            fp.write(u'%s7\nmmm\nñññ\nóóó\nppp\nqqq'%jltw.mru.MRULENTAG)
+            us = u'%s7\nmmm\nñññ\nó�ó\nppp\nqqq'%jltw.mru.MRULENTAG
+            fp.write(us)
         m = jltw.mru.MRU(self.tfn)
         m.load()
         self.assertEqual(m.maxlen, 7)
         self.assertEqual(len(m), 5)
-        self.assertEqual(unicode(m), u'mmm ñññ óóó ppp qqq')
+        self.assertEqual(unicode(m), u'mmm ñññ ó�ó ppp qqq')
         m.add('r')
         m.add(u'ß')
-        m.add('t')
-        self.assertEqual(unicode(m), u'ñññ óóó ppp qqq r ß t')
+        m.add(u'𐂜')
+        self.assertEqual(unicode(m), u'ñññ ó�ó ppp qqq r ß 𐂜')
+        m.save()
+        with codecs.open(self.tfn, encoding='utf-8') as fp:
+            ut = u'%s7\nñññ\nó�ó\nppp\nqqq\nr\nß\n𐂜\n'%jltw.mru.MRULENTAG
+            self.assertEqual(fp.read(), ut)
 
     def test_save(self):
         # Load the empty file
@@ -81,4 +86,5 @@ class MRUTest(unittest.TestCase):
         self.assertEqual(n.maxlen, 4)
         self.assertEqual(len(n), 4)
         self.assertEqual(unicode(n), u'ç d e f')
+
 

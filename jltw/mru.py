@@ -60,7 +60,7 @@ class MRU(object):
             self.add(newid)
         if not self.filename:
             return
-        us = '\n'.join((unicode(i) for i in self.q))
+        us = u'\n'.join((unicode(i) for i in self.q))
 
         fp = codecs.open(self.filename, 'w', encoding='utf-8')
         fp.write(MRULENTAG)
