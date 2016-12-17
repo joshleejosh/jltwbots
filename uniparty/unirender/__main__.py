@@ -2,6 +2,7 @@
 import os, os.path, argparse, glob, unicodedata, codecs, hashlib, subprocess, tempfile
 import jltw, jltw.mru
 import uniquery, fontquery
+from unicode_categories import CATEGORIES_TOP_LEVEL
 from util import *
 
 VERBOSITY = 0
@@ -10,7 +11,7 @@ TEMPLATE_FN = os.path.join(WDIR, 'svgtemplate.xml')
 
 def vlog(*args):
     if VERBOSITY > 0:
-        jltw.log(args)
+        jltw.log(*args)
 
 def scrub_output(odir):
     for fn in glob.glob(odir+'/*.svg'):
@@ -44,7 +45,7 @@ def adjust_color_value(iv, hx, amin, amax):
     vlog(iv, hv, rv)
     return rv
 
-def render_svg(u, fn, fontfn, odir, hv):
+def render_svg(u, n, fn, fontfn, odir):
     d = {
         'FFN' : fontfn,
         'CC1' : '#000000',
@@ -59,9 +60,12 @@ def render_svg(u, fn, fontfn, odir, hv):
         'GCY' : '50%',
         'GCR' : '100%',
         }
-    if hv:
+
+    if n:
+        # hash the name to generate pseudorandom values for colors.
+        hv = hashlib.md5(n).hexdigest()
         a = [hv[i:i+2] for i in xrange(0, len(hv), 2)]
-        vlog(hv, ' '.join(a))
+        vlog(' '.join(a))
 
         h, s, v = h2f(a[0]), h2f(a[1]), h2f(a[2])
         d['CC1'] = hsv_to_hex(h, s, v)
@@ -130,14 +134,12 @@ def render_char(u, ffn, odir):
 
     n = unicodedata.name(u, '')
     o = wideord(u)
-    scat = uniquery.SUPERCATEGORIES[unicodedata.category(u)[0]]
+    scat = CATEGORIES_TOP_LEVEL[unicodedata.category(u)[0]]
     if VERBOSITY >= 0:
         jltw.log(u'\t%s\t%04X\t%2s\t%s'%(u, o, scat, n))
 
-    # hash the name to generate pseudorandom values for colors.
-    nhash = hashlib.md5(n).hexdigest()
     fn = '%04X_%s'%(o, n)
-    render_svg(u, fn, ffn, odir, nhash)
+    render_svg(u, n, fn, ffn, odir)
     convert_png(fn, odir)
 
 

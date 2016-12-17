@@ -71,7 +71,7 @@ def collate_codepoints(a):
     # the first and last values, which are joined with a dash.
     # Also convert to hex somewhere along the way.
     u = ((i[0],i[-1])[:len(i)] for i in t)
-    v = (map(hex, i) for i in u)
+    v = (map(lambda j: '%x'%j, i) for i in u)
     x = ('-'.join(i) for i in v)
     y = ','.join(x)
     return y

@@ -5,52 +5,6 @@ import jltw
 
 #jltw.log(u'💪'.encode('unicode-escape'))
 
-CATEGORIES = collections.defaultdict(str)
-CATEGORIES.update({
-    'Cc': 'Other, Control',
-    'Cf': 'Other, Format',
-    'Cn': 'Other, Not Assigned',
-    'Co': 'Other, Private Use',
-    'Cs': 'Other, Surrogate',
-    'LC': 'Letter, Cased',
-    'Ll': 'Letter, Lowercase',
-    'Lm': 'Letter, Modifier',
-    'Lo': 'Letter, Other',
-    'Lt': 'Letter, Titlecase',
-    'Lu': 'Letter, Uppercase',
-    'Mc': 'Mark, Spacing Combining',
-    'Me': 'Mark, Enclosing',
-    'Mn': 'Mark, Nonspacing',
-    'Nd': 'Number, Decimal Digit',
-    'Nl': 'Number, Letter',
-    'No': 'Number, Other',
-    'Pc': 'Punctuation, Connector',
-    'Pd': 'Punctuation, Dash',
-    'Pe': 'Punctuation, Close',
-    'Pf': 'Punctuation, Final quote',
-    'Pi': 'Punctuation, Initial quote',
-    'Po': 'Punctuation, Other',
-    'Ps': 'Punctuation, Open',
-    'Sc': 'Symbol, Currency',
-    'Sk': 'Symbol, Modifier',
-    'Sm': 'Symbol, Math',
-    'So': 'Symbol, Other',
-    'Zl': 'Separator, Line',
-    'Zp': 'Separator, Paragraph',
-    'Zs': 'Separator, Space',
-    })
-
-SUPERCATEGORIES = collections.defaultdict(str)
-SUPERCATEGORIES.update({
-    'C': 'Other',
-    'L': 'Letter',
-    'M': 'Mark',
-    'N': 'Number',
-    'P': 'Punctuation',
-    'S': 'Symbol',
-    'Z': 'Separator',
-    })
-
 def dump():
     for i in xrange(0, 0x10FFFF):
         c = widechr(i)
