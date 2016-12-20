@@ -9,11 +9,7 @@ credentials/*.json
 
 jlj_ebooks/joshleejosh_tweets.json
 floorisx/floorisx_shuffle.json
-
-uniparty/Noto-unhinted
-uniparty/out
-uniparty/arc
-uniparty/fonts.shuffle
+losumiprem/losumiprem.out
 
 *.tmp
 .DS_Store
