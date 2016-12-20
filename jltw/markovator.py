@@ -6,8 +6,16 @@ CACHE_DELIM = '\v'
 TERMINATOR = '\f'
 
 class Markovator:
-    # data is a list of lists (sentences) of tokens (words)
-    # filter is a function(word) that returns True if the word is okay to use, and False if it should be skipped over.
+    # data is a list (corpus) of lists (sentences) of strings (words)
+    #   example = [
+    #       [ "Lorem", "ipsum", "dolor", "sit", "amet.", ],
+    #       [ "Consectetur", "adipisicing", "elit.", ],
+    #       [ "Sed", "do", "eiusmod", "tempor,", "incididunt", "labore.", ],
+    #   ]
+    #
+    # filter is a function(word) that returns True if the word is okay to
+    # include in the corpus, and False if it should be excluded.
+    #   example = lambda word: not word.upper().startswith('L')
     def __init__(self, data, filter=None, order=2):
         self.cache = defaultdict(lambda: defaultdict(int))
         self.corpus = data
@@ -30,7 +38,7 @@ class Markovator:
         for o,c in opts.iteritems():
             top += c
             if top >= pik:
-                #jltw.log('picked from [%s][%s]: [%d] [%d] [%d] -> [%s]'%(t, opts, tot, pik, top, o))
+                #jltw.log('picked', t, opts, tot, pik, top, o)
                 return o
         # shouldn't get here
         jltw.log('ERROR: couldn\'t pick from [%s][%s]: [%d] [%d] [%d]'%(t, opts, tot, pik, top))
@@ -46,11 +54,17 @@ class Markovator:
             nextword = self._pick(tuple(tokens))
         return rv
 
+    # Filter is a function that returns True if the sentence should be used,
+    # and False if we should reject it and try again. If no filter is
+    # specified, the default filter checks to see that we haven't recreated
+    # an entry from the input corpus.
     def generate(self, filter=None, retries=20):
+        if not filter:
+            filter = lambda s: s not in self.corpus
         rv = []
         faili = 0
         rv = self.chain()
-        if filter and retries > 0:
+        if retries > 0:
             while not filter(rv) and faili < retries:
                 faili += 1
                 rv = self.chain()
@@ -60,8 +74,10 @@ class Markovator:
 if __name__ == '__main__':
     import argparse, codecs, json, shuffler
     parser = argparse.ArgumentParser()
-    parser.add_argument('textfile', type=str, help='File containing one input sentence per line')
-    parser.add_argument('num', type=int, nargs='?', default=1, help='Number of sentences to generate')
+    parser.add_argument('textfile', type=str,
+            help='File containing one input sentence per line')
+    parser.add_argument('num', type=int, nargs='?', default=1,
+            help='Number of sentences to generate')
     args = parser.parse_args()
 
     fp = codecs.open(args.textfile, encoding='utf-8')
