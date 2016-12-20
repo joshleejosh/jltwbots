@@ -1,5 +1,7 @@
-import argparse
-import losumiprem.rhymer
+import argparse, random
+import jltw.mru
+from losumiprem.rhymer import set_verbosity, find_rhymes
+from losumiprem.filters import in_names, is_wordnet_proper
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -26,6 +28,10 @@ if __name__ == '__main__':
             help='less debug spam')
     args = parser.parse_args()
 
+    set_verbosity(args.verbose - args.quiet)
+    mru = jltw.mru.MRU(args.mrufile)
+    mru.load()
+
     words = [
         'L AO1 R AH0 M',
         'IH1 P S AH0 M',
@@ -34,9 +40,20 @@ if __name__ == '__main__':
         'AH0 M EH1 T',
     ]
 
-    losumiprem.rhymer.set_verbosity(args.verbose - args.quiet)
-    for sentence in losumiprem.rhymer.main(words, args.numout, args.mrufile, True):
-        sentence = sentence[0].upper() + sentence[1:]
-        sentence += '.'
-        print sentence
+    rhymes = []
+    for i in xrange(len(words)):
+        a = find_rhymes(words[i], isarpabetized=True)
+        a = [w.title() if in_names(w) or is_wordnet_proper(w) else w for w in a]
+        rhymes.append(a)
+
+    for i in xrange(args.numout):
+        s = ''
+        while not s or s in mru:
+            s = ' '.join((random.choice(w) for w in rhymes))
+            s = s[0].upper() + s[1:]
+            s += '.'
+        print s
+        mru.add(s)
+
+    mru.save()
 

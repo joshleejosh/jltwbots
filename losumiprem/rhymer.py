@@ -1,7 +1,6 @@
 # encoding: utf-8
-import argparse, sys, os, re, random
+import argparse, sys, re
 from collections import defaultdict
-import jltw.mru
 from losumiprem.filters import *
 
 VERBOSITY = 1
@@ -29,11 +28,8 @@ def levenshtein(s, t):
                     )
     return matrix[-1][-1]
 
+# Count syllables by counting the number of stress indicators in the pronunciation.
 RE_DIGIT_END = re.compile(r'\d$')
-RE_DIGIT = re.compile(r'\d+')
-def trim_stress(a):
-    return [RE_DIGIT.sub('', i) for i in a]
-
 def num_syllables(p):
     rv = 0
     for i in p:
@@ -42,10 +38,10 @@ def num_syllables(p):
     return rv
 
 # Two words (as phoneme lists) "truly" rhyme if:
-# - They have the same number of syllables
+# - They have (close to) the same number of syllables
 # - They have at least N identical phonemes, counting back from the end of the words.
 def true_rhyme(s, t):
-    if num_syllables(s) != num_syllables(t):
+    if abs(num_syllables(s) - num_syllables(t)) > 1:
         return False
     score = 0
     for i in xrange(1, min(len(s), len(t))):
@@ -110,10 +106,15 @@ def find_pronunciations(word):
     vlog(2, 'No substitution found', word, t)
     return []
 
+def filter_output_word(w):
+    return (in_wordnet(w) or in_names(w)) \
+            and not blacklist(w) \
+            and not graylist(w)
+
 # Find words that rhyme (more or less) with the given word.
 # The word may be just a word, or it may be a preformatted Arpabet pronunciation.
 # see https://en.wikipedia.org/wiki/Arpabet
-def find_rhymes(iword, ffilter=None, isarpabetized=False):
+def find_rhymes(iword, ffilter=filter_output_word, isarpabetized=False):
     iword = iword.lower()
     vlog(1, iword.upper())
 
@@ -140,6 +141,8 @@ def find_rhymes(iword, ffilter=None, isarpabetized=False):
                 ticker(i)
                 if overlap(w, word):
                     continue
+                if w in rv:
+                    continue
                 for p in CMUD[w]:
                     # look for strict rhymes
                     tr = true_rhyme(pronunciation, p)
@@ -152,47 +155,19 @@ def find_rhymes(iword, ffilter=None, isarpabetized=False):
                 continue
             vlog(2, len(candidates))
             vlog(4, '\n'.join('%s\t%s'%(c[0], '-'.join(c[1])) for c in candidates))
-            rv.extend((c[0] for c in candidates if c[0] not in rv))
+            rv.extend(c[0] for c in candidates)
     if ffilter:
         lenbefore = len(rv)
         rv = filter(ffilter, rv)
         lenafter = len(rv)
         vlog(2, 'Filter', lenbefore, lenafter)
-    vlog(3, ' '.join(rv))
-    vlog(1, '%d rhymes for %s'%(len(rv), iword))
-    return rv
-
-def main(words, n, mfn, arpabet):
-    mru = jltw.mru.MRU(mfn)
-    mru.resize(n)
-    mru.load()
-    result = []
-    for word in words:
-        a = find_rhymes(word,
-            lambda w: (in_wordnet(w) or in_names(w)) and not blacklist(w) and not graylist(w),
-            isarpabetized=arpabet)
-        a = [w.title() if in_names(w) or is_wordnet_proper(w) else w for w in a]
-        result.append(a)
-    rv = []
-    for i in xrange(n):
-        s = ''
-        while not s or s in mru:
-            s = ' '.join((random.choice(w) for w in result))
-        mru.add(s)
-        rv.append(s)
-    mru.save()
+    vlog(1, len(rv))
     return rv
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('word', nargs='+',
             help='words to rhyme')
-    parser.add_argument('-n', '--num-out',
-            dest='numout',
-            action='store',
-            type=int,
-            default=1,
-            help='number of rhymes to generate')
     parser.add_argument('-a', '--arpabet',
             dest='arpabet',
             action='store_true',
@@ -210,6 +185,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     set_verbosity(args.verbose, args.quiet)
-    for sentence in main(args.word, args.numout, '', args.arpabet):
-        vlog(-99, sentence)
+
+    for word in args.word:
+        a = find_rhymes(word, isarpabetized=args.arpabet)
+        vlog(1, '%d rhymes for %s'%(len(a), word))
+        s = ' '.join(a)
+        vlog(-99, s)
 
