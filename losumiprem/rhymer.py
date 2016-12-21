@@ -29,37 +29,107 @@ def levenshtein(s, t):
     return matrix[-1][-1]
 
 # Count syllables by counting the number of stress indicators in the pronunciation.
-RE_DIGIT_END = re.compile(r'\d$')
 def num_syllables(p):
-    rv = 0
-    for i in p:
-        if RE_DIGIT_END.search(i):
-            rv += 1
-    return rv
+    return len([
+            i[-1]
+            for i in p
+            if i[-1].isdigit()
+            ])
 
-# Two words (as phoneme lists) "truly" rhyme if:
-# - They have (close to) the same number of syllables
-# - They have at least N identical phonemes, counting back from the end of the words.
-def true_rhyme(s, t):
-    if abs(num_syllables(s) - num_syllables(t)) > 1:
+# In Arpabet, stresses are marked: 0=no stress, 1=primary stress, 2=secondary
+# stress. This makes sorting annoying.
+STRESS_RANK = (0, 2, 1)
+
+# in Arpabet, the stress levels aren't always consistent (ex RUMOUR/TUMOR), and
+# stresses are repeated (ex RAFAELA/RUBELLA), so we need to look for the last
+# instance of the highest stress value.
+def _last_max_stress(p):
+    maxi = maxv = 0
+    for i in xrange(1, len(p)):
+        q = p[-i]
+        if q[-1].isdigit():
+            v = STRESS_RANK[int(q[-1])]
+            if v > maxv:
+                maxv = v
+                maxi = len(p)-i
+    return maxi, maxv
+
+def _split_stress(p):
+    if p[-1].isdigit():
+        return p[:-1], int(p[-1])
+    else:
+        return p, 0
+
+# A perfect rhyme is one where the words match from the stressed vowel onwards.
+# In Arpabet, stress markers are on the vowels, so we just need to find the
+# stress point and match forward from there.
+def perfect_rhyme(p, q, syllableTolerance=1):
+    if abs(num_syllables(p) - num_syllables(q)) > syllableTolerance:
+        return False
+    pi, pr = _last_max_stress(p)
+    qi, qr = _last_max_stress(q)
+    #print p, pr, pi, p[pi:], q, qr, qi, q[qi:]
+
+    if len(p)-pi != len(q)-qi:
+        return False
+
+    # the sound just *before* the stress point must differ
+    if pi > 0 and qi > 0:
+        px, _ = _split_stress(p[pi-1])
+        qx, _ = _split_stress(q[qi-1])
+        if px == qx:
+            return False
+
+    # scan forward from the stress point, stripping out stress markers
+    while pi < len(p) and qi < len(q):
+        px, pv = _split_stress(p[pi])
+        qx, qv = _split_stress(q[qi])
+        # we care that a phone is stressed, but not *how* stresed.
+        if pv > 0:
+            pv = 1
+        if qv > 0:
+            qv = 1
+        if px != qx or pv != qv:
+            return False
+        pi += 1
+        qi += 1
+    return True
+
+# just look for decent ending matches
+def slant_rhyme(p, q, syllableTolerance=1, matchLength=2):
+    if abs(num_syllables(p) - num_syllables(q)) > syllableTolerance:
         return False
     score = 0
-    for i in xrange(1, min(len(s), len(t))):
-        if s[-i] != t[-i]:
+    for i in xrange(1, min(len(p), len(q))):
+        ps, _ = _split_stress(p[-i])
+        ts, _ = _split_stress(q[-i])
+        if ps != ts:
             break
         score += 1
-    return score >= 2
+    return score >= matchLength
 
-# Do these two words overlap?
+def check_rhyme(p, q):
+    if perfect_rhyme(p, q):
+        return True
+    if slant_rhyme(p, q):
+        return True
+    #score = levenshtein(p, q)
+    #if (0 < score <= similiarityThreshold):
+    #    return True
+    return False
+
+# ######################################################## #
+
+# Do s contain t or vice versa?
 def overlap(s, t):
     s = s.lower()
     t = t.lower()
-    if s == t:
-        return True
-    if s.find(t) != -1:
-        return True
-    if t.find(s) != -1:
-        return True
+    if len(s) >= len(t):
+        if s.find(t) != -1:
+            return True
+    if len(t) >= len(s):
+        if t.find(s) != -1:
+            return True
     return False
 
 PROGRESS_RATE = 20000
@@ -72,7 +142,7 @@ def ticker(i):
 # If not, try to find the most "similar" words and return those.
 def find_nearest_dictionary_entries(iword, threshold=99):
     iword = iword.lower()
-    if iword in CMUD:
+    if iword in CMUD.iterkeys():
         return (iword, CMUD[iword])
     i = 1
     minscore = min(threshold, len(iword))
@@ -93,7 +163,7 @@ def find_nearest_dictionary_entries(iword, threshold=99):
 # If the word is in the CMU corpus, return it and its pronunciation.
 # If not, find similar words and return them instead.
 def find_pronunciations(word):
-    if word in CMUD:
+    if word in CMUD.iterkeys():
         return [ (word, CMUD[word]), ]
     for t in xrange(1, min(4,len(word)-1)):
         nearby = find_nearest_dictionary_entries(word, threshold=t)
@@ -135,27 +205,23 @@ def find_rhymes(iword, ffilter=filter_output_word, isarpabetized=False):
             rv.append(word)
         for pronunciation in pronunciations:
             i = 1
-            threshold = min(3, len(pronunciation)/3)
+            similiarityThreshold = min(3, len(pronunciation)/2)
             candidates = []
             for i,w in enumerate(CMUD.iterkeys()):
                 ticker(i)
-                if overlap(w, word):
-                    continue
-                if w in rv:
+                if w in candidates or w in rv or overlap(w, word):
                     continue
                 for p in CMUD[w]:
-                    # look for strict rhymes
-                    tr = true_rhyme(pronunciation, p)
-                    # look for slant rhymes by looking at similarity of phonemes
-                    score = levenshtein(pronunciation, p)
-                    if tr or (0 < score <= threshold):
-                        candidates.append((w, p))
+                    if check_rhyme(pronunciation, p):
+                        candidates.append(w)
+                        # even if this word has multiple pronunciations,
+                        # there's no need to keep checking them.
+                        break
             if not candidates:
                 vlog(1, 'no candidates', pronunciation)
                 continue
             vlog(2, len(candidates))
-            vlog(4, '\n'.join('%s\t%s'%(c[0], '-'.join(c[1])) for c in candidates))
-            rv.extend(c[0] for c in candidates)
+            rv.extend(candidates)
     if ffilter:
         lenbefore = len(rv)
         rv = filter(ffilter, rv)
