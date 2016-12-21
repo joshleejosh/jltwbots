@@ -7,8 +7,8 @@ botenv
 credentials/*.json
 !credentials/example_credentials.json
 
+botdata/floorisx_shuffle.json
 jlj_ebooks/joshleejosh_tweets.json
-floorisx/floorisx_shuffle.json
 losumiprem/losumiprem.out
 
 *.tmp

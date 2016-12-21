@@ -37,7 +37,7 @@ blank (instead of 1/len(list)).
 """
 
 import os, random, re, copy, unicodedata
-import jltw
+import jltw, jltw.shuffler
 
 KEY_ROOT = "*"
 KEY_INCLUDE = "*include"
@@ -54,6 +54,7 @@ class Grammarizer(object):
         self.set_grammar(g)
         self.shuffler = s
         self.doAAnReplacement = True
+        self.verbose = False
 
     def set_grammar(self, g):
         self.grammar = g
@@ -202,39 +203,68 @@ class Grammarizer(object):
             rv = tgt[0:firstLetter] + tgt[firstLetter].upper() + tgt[firstLetter+1:]
         return rv
 
-def main(gfn, sfn, n):
-    sh = shuffler.Shuffler()
-    grammar = {
-        '*fix': [ 'sUbJeCt', 'VERB' ],
-        '*': '{Aan} {subject} {verb} {aan} {ADJECTIVE??} {OBject}{punctuation} {Coda?}',
-        'SUBJECT': [ 'mouse', 'cat', 'dog', 'elephant', 'iguana' ],
-        'verb': [ 'ate', 'chased', 'hugged', 'played with' ],
-        'Adjective': [ 'effin\'', 'freakin\'' ],
-        'ObJeCt': [ u'👻' , 'FOAM BALL', 'ostrich egg', 'wooden stick', 'oak leaf', u'«speeding ambulance»', 'radio telescope' ],
-        'punctuation': [ '!', '?', '.', '.'],
-        'coda': 'That {subject} sure {verb} it{punctuation}',
-    }
-    wdir = os.getcwd()
-    if gfn.strip():
-        fp = codecs.open(gfn, encoding='utf-8')
-        grammar = json.load(fp)
-        wdir = os.path.dirname(os.path.realpath(gfn))
-        fp.close()
-    if sfn.strip():
-        sh.load(sfn)
+# ######################################################## #
 
-    gizer = Grammarizer(grammar, sh, wdir)
-    for i in xrange(n):
-        jltw.log(gizer.generate())
-    if sfn:
-        sh.save()
+TESTGRAMMAR = {
+    '*fix': [ 'sUbJeCt', 'VERB' ],
+    '*': '{Aan} {subject} {verb} {aan} {ADJECTIVE??} {OBject}{punctuation} {Coda?}',
+    'SUBJECT': [ 'mouse', 'cat', 'dog', 'elephant', 'iguana' ],
+    'verb': [ 'ate', 'chased', 'hugged', 'played with' ],
+    'Adjective': [ 'effin\'', 'freakin\'' ],
+    'ObJeCt': [ u'👻' , 'FOAM BALL', 'ostrich egg', 'wooden stick', 'oak leaf', u'«speeding ambulance»', 'radio telescope' ],
+    'punctuation': [ '!', '?', '.', '.'],
+    'coda': 'That {subject} sure {verb} it{punctuation}',
+}
 
 if __name__ == '__main__':
     import argparse, codecs, json, shuffler
     parser = argparse.ArgumentParser()
-    parser.add_argument('grammarfile', type=str, nargs='?')
-    parser.add_argument('shufflefile', type=str, nargs='?')
-    parser.add_argument('num', type=int, nargs='?', default=1)
+    parser.add_argument('grammarfile',
+            type=str,
+            help='file containing the grammar to draw from')
+    parser.add_argument('-s', '--shufflefile',
+            dest='shuffile',
+            action='store',
+            default='',
+            help='file containing token shuffle state')
+    parser.add_argument('-n', '--num-lines',
+            dest='numlines',
+            action='store',
+            type=int,
+            default=1,
+            help='number of lines to generate')
+    parser.add_argument('-t', '--tweet',
+            dest='tweet',
+            action='store_true',
+            help='post to twitter.')
+    parser.add_argument('-v', '--verbose',
+            dest='verbose',
+            action='store_true',
+            help='print debug spam')
     args = parser.parse_args()
-    main(args.grammarfile, args.shufflefile, args.num)
+
+    grammar = TESTGRAMMAR
+    if os.path.isfile(os.path.realpath(args.grammarfile)):
+        with codecs.open(args.grammarfile, encoding='utf-8') as fp:
+            grammar = json.load(fp)
+
+    shuffler = jltw.shuffler.Shuffler()
+    if args.shuffile:
+        shuffler.load(args.shuffile)
+
+    gizer = Grammarizer(grammar, shuffler)
+    gizer.verbose = args.verbose
+
+    api = None
+    if args.tweet:
+        api = jltw.open_twitter(args.authfile)
+        args.numlines = 1
+
+    for i in xrange(args.numlines):
+        line = gizer.generate()
+        jltw.log(line)
+        if args.tweet:
+            api.PostUpdate(line)
+
+    shuffler.save()
 
