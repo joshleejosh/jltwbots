@@ -6,8 +6,6 @@ import os.path, json, random, codecs
 import jltw
 
 class Shuffler:
-    CHROFFSET = ord('A')
-
     def __init__(self):
         self.filename = ''
         self.state = {}
@@ -27,32 +25,24 @@ class Shuffler:
         if not self.filename:
             return
         with codecs.open(self.filename, 'w', encoding='utf-8') as fp:
-            json.dump(self.state, fp, ensure_ascii=False, indent=1)
+            json.dump(self.state, fp, ensure_ascii=False, indent=0)
 
     def choice(self, k, a):
         # load or reload this key into state
-        if self.state.has_key(k) and self.state[k]:
+        if k in self.state and len(self.state[k]) > 0:
             pass
         else:
-            #jltw.log('reload %s'%k)
-            sa = []
-            for i in xrange(len(a)):
-                sa.append(unichr(self.CHROFFSET + i))
-            random.shuffle(sa)
-            self.state[k] = ''.join(sa)
+            self._refresh(k, a)
 
         # pick off the first element from this key's shuffled array
-        c = u''
-        if self.state.has_key(k) and self.state[k]:
-            c = self.state[k][0]
-            self.state[k] = self.state[k][1:]
+        v = -1
+        if k in self.state and len(self.state[k]) > 0:
+            v = self.state[k].pop(0)
 
-        # translate the letter into an array index, then to a value
         rv = u''
-        if c:
-            i = ord(c) - self.CHROFFSET
-            if i < len(a):
-                rv = a[i]
+        if v > -1:
+            if v < len(a):
+                rv = a[v]
             else:
                 #jltw.log('fail: not enough elements for %d in %s (%d: [%s])'%(i, k, len(a), a))
                 rv = random.choice(a)
@@ -61,8 +51,9 @@ class Shuffler:
             rv = random.choice(a)
         return rv
 
-def load(fn):
-    rv = Shuffler()
-    rv.load(fn)
-    return rv
+    def _refresh(self, k, a):
+        #jltw.log('refresh %s'%k)
+        sa = range(len(a))
+        random.shuffle(sa)
+        self.state[k] = sa
 

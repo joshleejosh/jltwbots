@@ -1,4 +1,4 @@
-import os, unittest, tempfile, codecs
+import os, unittest, tempfile, codecs, json
 import jltw.shuffler
 
 class ShufflerTest(unittest.TestCase):
@@ -63,12 +63,17 @@ class ShufflerTest(unittest.TestCase):
         v = s.choice('foo', self.data1)
         w = s.choice('bar', self.data2)
         s.save()
+
+        # inspect the json data directly
         with codecs.open(self.tfn, 'r', encoding='utf-8') as fp:
-            rs = fp.read()
-            # we don't know the exact order of the string, but we know how long it is, including json formatting.
-            if len(rs) != 382:
-                print v, w, rs
-            self.assertEqual(len(rs), 382)
+            j = json.load(fp)
+            self.assertEqual(len(j), 2)
+            self.assertEqual(len(j['foo']), 299)
+            self.assertEqual(len(j['foo']), len(set(j['foo']))) # all unique
+            self.assertEqual(j['foo'], s.state['foo'])
+            self.assertEqual(len(j['bar']), 54)
+            self.assertEqual(len(j['bar']), len(set(j['bar'])))
+            self.assertEqual(j['bar'], s.state['bar'])
 
         # reload the file into a new Shuffler instance. All the data should be the same.
         t = jltw.shuffler.Shuffler()
@@ -87,8 +92,10 @@ class ShufflerTest(unittest.TestCase):
 
         t.save()
         with codecs.open(self.tfn, 'r', encoding='utf-8') as fp:
-            rt = fp.read()
-            self.assertEqual(len(rt), 27)
+            j = json.load(fp)
+            self.assertEqual(len(j), 2)
+            self.assertEqual(len(j['foo']), 0)
+            self.assertEqual(len(j['bar']), 0)
 
 
     # TODO: test edge cases when the base dataset is resized and goes out of sync with the shuffler.
