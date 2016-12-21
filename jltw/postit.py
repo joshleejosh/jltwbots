@@ -111,7 +111,7 @@ def check_paths(ddir, mdir, afn):
 
     return ddir, mdir, afn
 
-def main(db, mdir, authfn, doDelete, doTweet):
+def main(db, mdir, authfn, doTweet):
     vlog(db, mdir)
     note = None
     if os.path.isdir(db):
@@ -142,10 +142,6 @@ if __name__ == '__main__':
             dest='randomize',
             action='store_true',
             help='choose randomly instead of taking notes in order')
-    parser.add_argument('-d', '--delete',
-            dest='delete',
-            action='store_true',
-            help='delete postits and media after posting')
     parser.add_argument('-t', '--tweet',
             dest='tweet',
             action='store_true',
@@ -171,5 +167,5 @@ if __name__ == '__main__':
     if not ddir:
         exit(1)
 
-    main(ddir, mdir, afn, args.delete, args.tweet)
+    main(ddir, mdir, afn, args.tweet)
 
