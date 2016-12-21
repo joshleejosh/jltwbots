@@ -219,6 +219,9 @@ TESTGRAMMAR = {
 if __name__ == '__main__':
     import argparse, codecs, json, shuffler
     parser = argparse.ArgumentParser()
+    parser.add_argument('authfile',
+            type=str,
+            help='file containing twitter credentials')
     parser.add_argument('grammarfile',
             type=str,
             help='file containing the grammar to draw from')
