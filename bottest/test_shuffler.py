@@ -1,3 +1,4 @@
+# encoding: utf-8
 import os, unittest, tempfile, codecs, json
 import jltw.shuffler
 
@@ -97,6 +98,25 @@ class ShufflerTest(unittest.TestCase):
             self.assertEqual(len(j['foo']), 0)
             self.assertEqual(len(j['bar']), 0)
 
+    def test_unicode(self):
+        k1 = u'fÖø💩'
+        k2 = u'𐐔𐐯𐑅𐐨𐑉𐐯𐐻'
+        s = jltw.shuffler.Shuffler()
+        v = s.choice(k1, self.data1)
+        w = s.choice(k2, self.data2)
+        s.save(self.tfn)
+
+        t = jltw.shuffler.Shuffler()
+        t.load(self.tfn)
+        self.assertEqual(len(s.state), len(t.state))
+        self.assertEqual(s.state[k1], t.state[k1])
+        self.assertEqual(s.state[k2], t.state[k2])
+        t.save()
+
+        with codecs.open(self.tfn, 'r', encoding='utf-8') as fp:
+            j = json.load(fp)
+            self.assertEqual(j[k1], t.state[k1])
+            self.assertEqual(j[k2], t.state[k2])
 
     # TODO: test edge cases when the base dataset is resized and goes out of sync with the shuffler.
 

@@ -1,6 +1,5 @@
 # encoding: utf-8
-# A very silly way to persist shuffled datasets, in order to maintain
-# distribution across runs of a program.
+# Persist shuffled sequences across runs of a program.
 
 import os.path, json, random, codecs
 import jltw
@@ -25,7 +24,11 @@ class Shuffler:
         if not self.filename:
             return
         with codecs.open(self.filename, 'w', encoding='utf-8') as fp:
-            json.dump(self.state, fp, ensure_ascii=False, indent=0)
+            s = json.dumps(self.state, fp, ensure_ascii=False)
+            s = s.replace('{', '{\n')
+            s = s.replace('}', '\n}')
+            s = s.replace('], ', '],\n')
+            fp.write(s)
 
     def choice(self, k, a):
         # load or reload this key into state
