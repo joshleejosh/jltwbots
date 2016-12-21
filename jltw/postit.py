@@ -104,14 +104,15 @@ def check_paths(ddir, mdir, afn):
         vlog('Invalid output directory', mdir, force=True)
         return ('', '', '')
 
-    afn = os.path.realpath(afn)
-    if not os.path.isfile(afn):
-        vlog('Invalid auth file', afn, force=True)
-        return ('', '', '')
+    if afn:
+        afn = os.path.realpath(afn)
+        if not os.path.isfile(afn):
+            vlog('Invalid auth file', afn, force=True)
+            return ('', '', '')
 
     return ddir, mdir, afn
 
-def main(db, mdir, authfn, doTweet):
+def main(db, mdir, authfn):
     vlog(db, mdir)
     note = None
     if os.path.isdir(db):
@@ -120,7 +121,7 @@ def main(db, mdir, authfn, doTweet):
         note = pick_from_file(db)
 
     vlog(note.text, force=True)
-    if doTweet and not DRYRUN:
+    if authfn and not DRYRUN:
         api = jltw.open_twitter(authfn)
         if note.media:
             with open(note.media, 'rb') as fp:
@@ -130,8 +131,6 @@ def main(db, mdir, authfn, doTweet):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('authfile',
-            help='Directory containing twitter credentials')
     parser.add_argument('datadir',
             help='Directory containing postit files, OR single file containing lines')
     parser.add_argument('mediadir',
@@ -144,8 +143,10 @@ if __name__ == '__main__':
             help='choose randomly instead of taking notes in order')
     parser.add_argument('-t', '--tweet',
             dest='tweet',
-            action='store_true',
-            help='post to twitter.')
+            action='store',
+            type=str,
+            default='',
+            help='post to twitter, with credentials in given file.')
     parser.add_argument('-n', '--dry-run',
             dest='dryrun',
             action='store_true',
@@ -163,9 +164,9 @@ if __name__ == '__main__':
     if args.randomize:
         RANDOMIZE = True
 
-    ddir, mdir, afn = check_paths(args.datadir, args.mediadir, args.authfile)
+    ddir, mdir, afn = check_paths(args.datadir, args.mediadir, args.tweet)
     if not ddir:
         exit(1)
 
-    main(ddir, mdir, afn, args.tweet)
+    main(ddir, mdir, afn)
 

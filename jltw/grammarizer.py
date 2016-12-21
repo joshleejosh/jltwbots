@@ -219,9 +219,6 @@ TESTGRAMMAR = {
 if __name__ == '__main__':
     import argparse, codecs, json, shuffler
     parser = argparse.ArgumentParser()
-    parser.add_argument('authfile',
-            type=str,
-            help='file containing twitter credentials')
     parser.add_argument('grammarfile',
             type=str,
             help='file containing the grammar to draw from')
@@ -238,8 +235,10 @@ if __name__ == '__main__':
             help='number of lines to generate')
     parser.add_argument('-t', '--tweet',
             dest='tweet',
-            action='store_true',
-            help='post to twitter.')
+            action='store',
+            type=str,
+            default='',
+            help='post to twitter, with credentials in given file.')
     parser.add_argument('-v', '--verbose',
             dest='verbose',
             action='store_true',
@@ -260,7 +259,7 @@ if __name__ == '__main__':
 
     api = None
     if args.tweet:
-        api = jltw.open_twitter(args.authfile)
+        api = jltw.open_twitter(args.tweet)
         args.numlines = 1
 
     for i in xrange(args.numlines):
