@@ -5,5 +5,5 @@ cd ${DIR}
 source botenv/bin/activate
 export PYTHONPATH=${PYTHONPATH}:${DIR}
 
-python -m unittest discover unittest "$@"
+python -m unittest discover bottest "$@"
 

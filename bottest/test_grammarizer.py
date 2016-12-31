@@ -1,21 +1,25 @@
 # encoding: utf-8
 import os, unittest, tempfile, codecs, collections
+import numpy, math
 import jltw.mru
 from jltw.grammarizer import Grammarizer
 
-class MRUTest(unittest.TestCase):
+class GrammarizerTest(unittest.TestCase):
     def setUp(self):
         pass
     def tearDown(self):
         pass
 
-    def _check_distribution(self, ct, sz, t):
-        sz = float(sz)
-        ratio = float(ct) / sz
-        variance = ratio / t - 1.0
-        THRESHOLD = 0.2000
+    def _check_distribution(self, ct, sz, pr):
+        if pr == 0:
+            if ct != 0:
+                self.fail('Bad Randomness: [%f] -> [%f]'%(pr, ct))
+            return
+        rate = float(ct) / float(sz)
+        variance = rate / pr - 1.0
+        THRESHOLD = 0.1000
         if abs(variance) > THRESHOLD:
-            self.fail('Bad Randomness: [%f/%f][%f] -> [%f]'%(ct, sz, ratio, variance))
+            self.fail('Bad Randomness: [%f/%f][%f] -> [%f]'%(ct, sz, rate, variance))
 
     def test_empty(self):
         d = { '*': '', }
@@ -36,6 +40,8 @@ class MRUTest(unittest.TestCase):
             self.fail('grammarizer should choke on bad token')
         except KeyError:
             pass
+        except:
+            raise
 
     def test_replacement(self):
         d = {
@@ -102,45 +108,75 @@ class MRUTest(unittest.TestCase):
         self.assertEqual(g.generate(), 'lorem ipsum')
 
     def test_optional(self):
+        sampsz = 9000
         # A list should give a roughly uniform distribution of its elements.
         d = {
-            '*': '{a}',
-            'a': ['a', 'b', 'c']
+            '*': '{q}',
+            'q': ['a', 'b', 'c']
         }
         g = Grammarizer(d, None)
         c = {'a':0, 'b':0, 'c':0}
-        for i in xrange(1000):
+        for i in xrange(sampsz):
             c[g.generate()] += 1
-        self._check_distribution(c['a'], 1000, 1.0/3.0)
-        self._check_distribution(c['b'], 1000, 1.0/3.0)
-        self._check_distribution(c['c'], 1000, 1.0/3.0)
+        self._check_distribution(c['a'], sampsz, 1.0/3.0)
+        self._check_distribution(c['b'], sampsz, 1.0/3.0)
+        self._check_distribution(c['c'], sampsz, 1.0/3.0)
 
         # A '?' in the token adds an empty string to its options, distributed
         # evenly with the rest of the elements.
-        d['*'] = '{a?}'
+        d['*'] = '{q?}'
         g = Grammarizer(d, None)
         c = {'a':0, 'b':0, 'c':0, '':0}
-        for i in xrange(1000):
+        for i in xrange(sampsz):
             c[g.generate()] += 1
-        self._check_distribution(c['a'], 1000, 0.25)
-        self._check_distribution(c['b'], 1000, 0.25)
-        self._check_distribution(c['c'], 1000, 0.25)
-        self._check_distribution(c[''],  1000, 0.25)
+        self._check_distribution(c['a'], sampsz, 0.25)
+        self._check_distribution(c['b'], sampsz, 0.25)
+        self._check_distribution(c['c'], sampsz, 0.25)
+        self._check_distribution(c[''],  sampsz, 0.25)
 
         # A '??' in the token makes the token as a whole optional, so the
         # result should come up 50% empty, while the other values evenly split
         # the other 50%.
-        d['*'] = '{a??}'
+        d['*'] = '{q??}'
         g = Grammarizer(d, None)
         c = {'a':0, 'b':0, 'c':0, '':0}
-        for i in xrange(1000):
+        for i in xrange(sampsz):
             c[g.generate()] += 1
-        self._check_distribution(c['a'], 1000, 1.0/6.0)
-        self._check_distribution(c['b'], 1000, 1.0/6.0)
-        self._check_distribution(c['c'], 1000, 1.0/6.0)
-        self._check_distribution(c[''],  1000, 0.5)
+        self._check_distribution(c['a'], sampsz, 1.0/6.0)
+        self._check_distribution(c['b'], sampsz, 1.0/6.0)
+        self._check_distribution(c['c'], sampsz, 1.0/6.0)
+        self._check_distribution(c[''],  sampsz, 0.5)
+
+    def test_weighted(self):
+        sampsz = 9000
+        d = {
+            '*': '{q}',
+            'q': [
+                '{r*3}', # this counts as 3 r's
+                '{s}',
+                'qq{t*100}', # the extra text means this won't be parsed as a weight.
+                '{u*0}', # this will never be picked
+                '{v*2}'
+            ],
+            'r': 'a',
+            's': 'b{v*10}', # a weight in a string has no effect
+            't*100': 'c',
+            'u': 'd',
+            'v': 'e',
+            'v*10': 'f'
+        }
+        g = Grammarizer(d, None)
+        c = {'a':0, 'bf':0, 'qqc':0, 'd':0, 'e':0}
+        for i in xrange(sampsz):
+            c[g.generate()] += 1
+        self._check_distribution(c['a'],   sampsz, 3.0/7.0)
+        self._check_distribution(c['bf'],  sampsz, 1.0/7.0)
+        self._check_distribution(c['qqc'], sampsz, 1.0/7.0)
+        self._check_distribution(c['d'],   sampsz, 0.0/7.0)
+        self._check_distribution(c['e'],   sampsz, 2.0/7.0)
 
     def test_fixed(self):
+        sampsz = 9000
         d = {
             '*': '{pick},{foo}',
             'foo': '{pick}',
@@ -148,19 +184,19 @@ class MRUTest(unittest.TestCase):
         }
         g = Grammarizer(d, None)
         c = collections.defaultdict(int)
-        for i in xrange(9000):
+        for i in xrange(sampsz):
             c[g.generate()] += 1
         self.assertEqual(len(c), 9)
         for k,ct in c.iteritems():
-            self._check_distribution(ct, 9000, 1.0/9.0)
+            self._check_distribution(ct, sampsz, 1.0/9.0)
 
         d['*fix'] = ['pick',]
         g = Grammarizer(d, None)
         c = collections.defaultdict(int)
-        for i in xrange(9000):
+        for i in xrange(sampsz):
             c[g.generate()] += 1
         self.assertEqual(len(c), 3)
-        self._check_distribution(c['a,a'], 9000, 1.0/3.0)
-        self._check_distribution(c['b,b'], 9000, 1.0/3.0)
-        self._check_distribution(c['c,c'], 9000, 1.0/3.0)
+        self._check_distribution(c['a,a'], sampsz, 1.0/3.0)
+        self._check_distribution(c['b,b'], sampsz, 1.0/3.0)
+        self._check_distribution(c['c,c'], sampsz, 1.0/3.0)
 

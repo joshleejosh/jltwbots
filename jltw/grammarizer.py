@@ -29,10 +29,16 @@ If the '*include' key is present and is a list of filenames, those files will
 be loaded and added to the grammar. Values in the primary file take precedence
 over those in included files.
 
-If a token ends with '?' (e.g., {foo?} instead of {foo}), and the token's value
-is a list, a blank will be appended to the list to make the value optional. If
-the token ends with '??' (e.g., {foo??}), there will be a 50/50 chance of a
-blank (instead of 1/len(list)).
+If a token ends with '?' (e.g., `{foo?}` instead of `{foo}`), and the token's
+value is a list, a blank will be appended to the list to make the value
+optional. If the token ends with '??' (e.g., `{foo??}`), there will be a 50/50
+chance of a blank (instead of 1/len(list)).
+
+If some tokens in a choice list end with '*' and a number (e.g., `[ '{foo*2}',
+'{bar*3}', '{baz*1}' ]`), Those tokens will have added (or subtracted) weight
+when picking. This is achieved by stripping off the multiplier and duplicating
+the tokens. (This example expands to `[ '{foo}', '{foo}', '{bar}', '{bar}',
+'{bar}', '{baz}' ]`)
 
 """
 
@@ -44,6 +50,7 @@ KEY_INCLUDE = "*include"
 KEY_FIXEDVAL = "*fix"
 RE_TOKEN = re.compile(r'{([^}]*)}')
 RE_AAN = re.compile(r'{aan}', re.I)
+RE_WEIGHT = re.compile(r'^\{([^*]+)\*(\d+)\}$')
 
 class Grammarizer(object):
 
@@ -138,6 +145,7 @@ class Grammarizer(object):
             return ins
 
         elif hasattr(ins, '__iter__'):
+            ins = self._reweight(ins)
             v = None
             if self.shuffler:
                 v = self.shuffler.choice(key.lower(), ins)
@@ -147,6 +155,28 @@ class Grammarizer(object):
 
         else:
             return ins
+
+    def _reweight(self, ins):
+        doweight = False
+        weights = []
+        for i,oldk in enumerate(ins):
+            if RE_WEIGHT.match(oldk):
+                m = RE_WEIGHT.match(oldk)
+                newk = m.group(1)
+                neww = int(m.group(2))
+                if neww > 1:
+                    doweight = True
+                weights.append(('{%s}'%newk, neww))
+            else:
+                weights.append((oldk, 1))
+
+        rv = []
+        if doweight:
+            for k,w in weights:
+                rv.extend([[k]]*w)
+        else:
+            rv = ins
+        return rv
 
     def _squeeze_blank(self, ins, si, ei):
         repl = ''
