@@ -1,6 +1,7 @@
 # encoding: utf-8
 import argparse, sys, re
 from collections import defaultdict
+from losumiprem import split_stress
 from losumiprem.filters import *
 
 VERBOSITY = 1
@@ -54,12 +55,6 @@ def _last_max_stress(p):
                 maxi = len(p)-i
     return maxi, maxv
 
-def _split_stress(p):
-    if p[-1].isdigit():
-        return p[:-1], int(p[-1])
-    else:
-        return p, 0
-
 # A perfect rhyme is one where the words match from the stressed vowel onwards.
 # In Arpabet, stress markers are on the vowels, so we just need to find the
 # stress point and match forward from there.
@@ -75,15 +70,15 @@ def perfect_rhyme(p, q, syllableTolerance=1):
 
     # the sound just *before* the stress point must differ
     if pi > 0 and qi > 0:
-        px, _ = _split_stress(p[pi-1])
-        qx, _ = _split_stress(q[qi-1])
+        px, _ = split_stress(p[pi-1])
+        qx, _ = split_stress(q[qi-1])
         if px == qx:
             return False
 
     # scan forward from the stress point, stripping out stress markers
     while pi < len(p) and qi < len(q):
-        px, pv = _split_stress(p[pi])
-        qx, qv = _split_stress(q[qi])
+        px, pv = split_stress(p[pi])
+        qx, qv = split_stress(q[qi])
         # we care that a phone is stressed, but not *how* stresed.
         if pv > 0:
             pv = 1
@@ -101,8 +96,8 @@ def slant_rhyme(p, q, syllableTolerance=1, matchLength=2):
         return False
     score = 0
     for i in xrange(1, min(len(p), len(q))):
-        ps, _ = _split_stress(p[-i])
-        ts, _ = _split_stress(q[-i])
+        ps, _ = split_stress(p[-i])
+        ts, _ = split_stress(q[-i])
         if ps != ts:
             break
         score += 1
