@@ -30,16 +30,9 @@
         "stand {adverb?} on {desteither}"
     ],
 
-    "adverb?": [
-        "{adverb}",
-        ""
-    ],
-
     "desteither": [
-        "{destsingular}",
-        "{destsingular}",
-        "{destsingular}",
-        "{destplural}"
+        "{destsingular*3}",
+        "{destplural*1}"
     ],
     "destsingular": "{articlesingular} {furnituresingular}",
     "destplural": "{articleplural} {furnitureplural}",

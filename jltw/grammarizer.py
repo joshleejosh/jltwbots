@@ -1,6 +1,6 @@
 # encoding: utf-8
 """
-GRAMMARIZER – Why isn't this just Tracery?
+GRAMMARIZER – A quick and dirty grammar-based text generator
 
 Begin with the "*" key, and replace any {whatever} tokens you run into with the
 appropriate value, recursing where appropriate.
@@ -17,8 +17,7 @@ string will be left alone, whatever its case is.)
 (TODO: a way to force lowercase?)
 
 {aan} is a magic token that will be replaced with "A" or "AN", depending on the
-next word. This can be disabled by setting the doAAnReplacement property to
-False.
+next word. This can be disabled by setting the `allowAAn` property to False.
 
 If the '*fix' key is present and is a list of keys, and those keys are lists,
 the lists will be picked from and fixed to a single value BEFORE the grammar is
@@ -26,19 +25,22 @@ run. This results in values that are randomized between runs but consistent
 within a run.
 
 If the '*include' key is present and is a list of filenames, those files will
-be loaded and added to the grammar. Values in the primary file take precedence
+be loaded and added to the grammar. Rules in the primary file take precedence
 over those in included files.
 
 If a token ends with '?' (e.g., `{foo?}` instead of `{foo}`), and the token's
 value is a list, a blank will be appended to the list to make the value
 optional. If the token ends with '??' (e.g., `{foo??}`), there will be a 50/50
-chance of a blank (instead of 1/len(list)).
+chance of a blank (instead of 1/len(list)). This can be disabled by setting the
+`allowOptional` property to False.
 
 If some tokens in a choice list end with '*' and a number (e.g., `[ '{foo*2}',
 '{bar*3}', '{baz*1}' ]`), Those tokens will have added (or subtracted) weight
 when picking. This is achieved by stripping off the multiplier and duplicating
 the tokens. (This example expands to `[ '{foo}', '{foo}', '{bar}', '{bar}',
 '{bar}', '{baz}' ]`)
+
+TODO: Throw this whole thing away and use Tracery
 
 """
 
@@ -60,7 +62,8 @@ class Grammarizer(object):
         self.includePath = d
         self.set_grammar(g)
         self.shuffler = s
-        self.doAAnReplacement = True
+        self.allowAAn = True
+        self.allowOptional = True
         self.verbose = False
 
     def set_grammar(self, g):
@@ -106,7 +109,7 @@ class Grammarizer(object):
                         self.grammar[k] = self._replace_tokens(k, a)
 
         rv = self._replace_tokens(KEY_ROOT, self.grammar[KEY_ROOT])
-        if self.doAAnReplacement:
+        if self.allowAAn:
             rv = self._replace_aan(rv)
         return rv
 
@@ -116,15 +119,16 @@ class Grammarizer(object):
                 mkey = match.group(1).strip()
 
                 addblank = flipblank = False
-                if mkey.endswith('??'):
-                    mkey = mkey[:-2]
-                    flipblank = True
-                elif mkey.endswith('?'):
-                    mkey = mkey[:-1]
-                    addblank = True
+                if self.allowOptional:
+                    if mkey.endswith('??'):
+                        mkey = mkey[:-2]
+                        flipblank = True
+                    elif mkey.endswith('?'):
+                        mkey = mkey[:-1]
+                        addblank = True
 
                 repl = ''
-                if self.doAAnReplacement and mkey.lower() == 'aan':
+                if self.allowAAn and mkey.lower() == 'aan':
                     repl = '{%s}'%mkey
                 else:
                     a = self.grammar[mkey.lower()]
@@ -242,7 +246,10 @@ TESTGRAMMAR = {
     'verb': [ 'ate', 'chased', 'hugged', 'played with' ],
     'Adjective': [ 'effin\'', 'freakin\'' ],
     'ObJeCt': [ u'👻' , 'FOAM BALL', 'ostrich egg', 'wooden stick', 'oak leaf', u'«speeding ambulance»', 'radio telescope' ],
-    'punctuation': [ '!', '?', '.', '.'],
+    'punctuation': [ '{punct_stop*3}', '{punct_excl*2}', '{punct_ques}' ],
+    'punct_stop': '.',
+    'punct_ques': '?',
+    'punct_excl': '!',
     'coda': 'That {subject} sure {verb} it{punctuation}',
 }
 
