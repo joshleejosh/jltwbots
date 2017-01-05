@@ -1,7 +1,5 @@
 # encoding: utf-8
-import os
 import jltw, gridslice
-from unihelp import *
 
 GRID_SIZE = 8
 MIN_WORDS = 4
@@ -40,7 +38,7 @@ def load_wordlists(fn, bn):
 
 # ------------------------------------------------------------------ #
 
-def word_fits(word, template):
+def _word_fits(word, template):
     offsets = range(0, len(template)-len(word)+1)
     RNG.shuffle(offsets)
     for o in offsets:
@@ -55,7 +53,7 @@ def word_fits(word, template):
             return o
     return -1
 
-def find_fitting_word(template):
+def _find_fitting_word(template):
     tlen = len(template)
     if tlen < MIN_WORDLEN:
         raise ValueError('bad template [%s]'%template)
@@ -64,10 +62,10 @@ def find_fitting_word(template):
     if VERBOSE:
         jltw.log(u'find word of [%d] that fits with [%s]'%(wordlen, template))
 
-    candidates = [(w, word_fits(w,template)) for w in WORDLIST
+    candidates = [(w, _word_fits(w,template)) for w in WORDLIST
             if len(w) == wordlen
             and w not in BLACKLIST
-            and word_fits(w, template) != -1
+            and _word_fits(w, template) != -1
             ]
     if len(candidates) == 0:
         jltw.log('No candidates that fit [%d][%s]'%(wordlen, template))
@@ -107,12 +105,6 @@ def _fill_junk(grid):
             if grid[row][col] == ' ':
                 grid[row][col] = chr(RNG.randint(65,90))
 
-def _joingrid(grid):
-    return '\n'.join(
-            ''.join(c for c in row)
-            for row in grid
-            )
-
 def make_grid():
     words = set()
     grid = _newgrid()
@@ -139,7 +131,7 @@ def make_grid():
             jltw.log(u'%d/%d:[%s]'%(direction, slicei, sliceword))
 
         try:
-            word,offset = find_fitting_word(sliceword)
+            word,offset = _find_fitting_word(sliceword)
         except IndexError:
             continue
 
@@ -148,5 +140,5 @@ def make_grid():
 
     filled = _copygrid(grid)
     _fill_junk(filled)
-    return words, _joingrid(grid), _joingrid(filled)
+    return words, grid, filled
 

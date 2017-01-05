@@ -38,7 +38,6 @@ def cut_slice(grid, di, si):
         y += dy
     return cut
 
-
 if __name__ == '__main__':
     arrows = u'→↘↓↙←↖↑↗'
     g5 = [
