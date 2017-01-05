@@ -1,5 +1,5 @@
 # encoding: utf-8
-import random
+import argparse, time, copy
 import jltw
 from unihelp import widechr
 import wordfind
@@ -47,7 +47,7 @@ A_VARIANTS = [
         ]
 
 def squarify(s, v=34):
-    rv = ''
+    rv = u''
     for c in s.upper():
         if 'A' <= c <= 'Z':
             i = ord(c) - A_VARIANTS[0]
@@ -59,7 +59,6 @@ def squarify(s, v=34):
     return rv
 
 if __name__ == '__main__':
-    import argparse, time
     parser = argparse.ArgumentParser()
     parser.add_argument('wordlist')
     parser.add_argument('blacklist')
@@ -89,9 +88,10 @@ if __name__ == '__main__':
     if args.tweet:
         api = jltw.open_twitter(args.tweet)
 
-    words, grid = wordfind.make_grid()
-    jltw.log('%s\n%s'%(' '.join(list(words)), grid))
+    words, bare, filled = wordfind.make_grid()
+    jltw.log('%s\n\n%s\n\n%s'%(' '.join(list(words)), bare, filled))
+
     if args.tweet:
-        tweet = '%s\n%s'%(' '.join(list(words)), squarify(grid))
-        api.postUpdate(tweet)
+        tweet = u'%s\n%s'%(' '.join(list(words)), squarify(filled))
+        api.PostUpdate(tweet, verify_status_length=False)
 

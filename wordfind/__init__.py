@@ -82,7 +82,7 @@ def find_fitting_word(template):
 
 # ------------------------------------------------------------------ #
 
-def fill_grid(grid, di, si, offset, word):
+def _place_words(grid, di, si, offset, word):
     x, y, dx, dy = gridslice.slice_params(grid, di, si)
     x += dx * offset
     y += dy * offset
@@ -91,15 +91,31 @@ def fill_grid(grid, di, si, offset, word):
         x += dx
         y += dy
 
-def fill_junk(grid):
+def _newgrid():
+    return [[' ' for _ in xrange(GRID_SIZE)] for _ in xrange(GRID_SIZE)]
+
+def _copygrid(grid):
+    rv = _newgrid()
+    for row in xrange(GRID_SIZE):
+        for col in xrange(GRID_SIZE):
+            rv[row][col] = grid[row][col]
+    return rv
+
+def _fill_junk(grid):
     for row in xrange(GRID_SIZE):
         for col in xrange(GRID_SIZE):
             if grid[row][col] == ' ':
                 grid[row][col] = chr(RNG.randint(65,90))
 
+def _joingrid(grid):
+    return '\n'.join(
+            ''.join(c for c in row)
+            for row in grid
+            )
+
 def make_grid():
     words = set()
-    grid = [[' ' for _ in xrange(GRID_SIZE)] for _ in xrange(GRID_SIZE)]
+    grid = _newgrid()
 
     # only do half the directions; we'll handle mirrors below, but we don't
     # want any collisions while looking for slots.
@@ -127,9 +143,10 @@ def make_grid():
         except IndexError:
             continue
 
-        fill_grid(grid, direction, slicei, offset, word)
+        _place_words(grid, direction, slicei, offset, word)
         words.add(word)
 
-    fill_junk(grid)
-    return words, '\n'.join((''.join(row) for row in grid))
+    filled = _copygrid(grid)
+    _fill_junk(filled)
+    return words, _joingrid(grid), _joingrid(filled)
 
