@@ -2,4 +2,5 @@ python-twitter
 oauthlib
 requests
 requests-oauthlib
+numpy
 nltk
