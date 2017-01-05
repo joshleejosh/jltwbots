@@ -4,7 +4,7 @@
 # Return tuple (x, y, dx, dy), where x,y is the starting location for the slice
 # on the grid and dx,dy is the increment to walk through the slice.
 #
-# direction     first slice (G = grid size - 1)
+# direction     slice 0 starting point (G = grid size - 1)
 # 0 → W to E    top-left (0,0)
 # 1 ↘ NW to SE  bottom-left (0,G)
 # 2 ↓ N to S    top-left  (0,0)
@@ -16,22 +16,14 @@
 #
 def slice_params(grid, di, si):
     mg = len(grid) - 1
-    return [(0, si,  1,  0),
-            # x = 000001234
-            # y = 432100000
-            (max(0, si-mg), max(0, mg-si),  1,  1),
-            (si, 0,  0,  1),
-            # x = 012344444
-            # y = 000001234
-            (min(mg, mg-(mg-si)), max(0, si-mg), -1,  1),
-            (mg, si, -1,  0),
-            # x = 012344444
-            # y = 444443210
+    return [(0                  , si                 ,  1,  0),
+            (max(0, si-mg)      , max(0, mg-si)      ,  1,  1),
+            (si                 , 0                  ,  0,  1),
+            (min(mg, mg-(mg-si)), max(0, si-mg)      , -1,  1),
+            (mg                 , si                 , -1,  0),
             (min(mg, mg-(mg-si)), min(mg, mg-(si-mg)), -1, -1),
-            (si, mg,  0, -1),
-            # x = 000001234
-            # y = 123444444
-            (max(0, si-mg), min(mg, mg-(mg-si)),  1, -1),
+            (si                 , mg                 ,  0, -1),
+            (max(0, si-mg)      , min(mg, mg-(mg-si)),  1, -1),
             ][di]
 
 # Return a string containing the characters pulled out of the grid along the

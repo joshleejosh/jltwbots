@@ -59,7 +59,7 @@ def squarify(s, v=34):
     return rv
 
 if __name__ == '__main__':
-    import argparse
+    import argparse, time
     parser = argparse.ArgumentParser()
     parser.add_argument('wordlist')
     parser.add_argument('blacklist')
@@ -69,6 +69,12 @@ if __name__ == '__main__':
             type=str,
             default='',
             help='post to twitter, with credentials in given file.')
+    parser.add_argument('-s', '--seed',
+            dest='seed',
+            action='store',
+            type=int,
+            default=int(time.time()),
+            help='seed value for randomizer')
     parser.add_argument('-v', '--verbose',
             dest='verbose',
             action='store_true',
@@ -76,6 +82,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     wordfind.set_verbose(args.verbose)
+    wordfind.set_seed(args.seed)
     wordfind.load_wordlists(args.wordlist, args.blacklist)
 
     api = None

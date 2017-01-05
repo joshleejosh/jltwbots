@@ -1,5 +1,5 @@
 # encoding: utf-8
-import os, random
+import os
 import jltw, gridslice
 from unihelp import *
 
@@ -13,6 +13,14 @@ VERBOSE = 0
 def set_verbose(v):
     global VERBOSE
     VERBOSE = v
+
+RNG = None
+def set_seed(seed):
+    import random
+    global RNG
+    RNG = random.Random(seed)
+    if VERBOSE:
+        jltw.log('seed = [%d]'%seed)
 
 # ------------------------------------------------------------------ #
 
@@ -34,7 +42,7 @@ def load_wordlists(fn, bn):
 
 def word_fits(word, template):
     offsets = range(0, len(template)-len(word)+1)
-    random.shuffle(offsets)
+    RNG.shuffle(offsets)
     for o in offsets:
         wi = 0
         ti = o
@@ -52,7 +60,7 @@ def find_fitting_word(template):
     if tlen < MIN_WORDLEN:
         raise ValueError('bad template [%s]'%template)
 
-    wordlen = random.randint(min(MIN_WORDLEN, tlen), min(MAX_WORDLEN, len(template)))
+    wordlen = RNG.randint(min(MIN_WORDLEN, tlen), min(MAX_WORDLEN, len(template)))
     if VERBOSE:
         jltw.log(u'find word of [%d] that fits with [%s]'%(wordlen, template))
 
@@ -67,7 +75,7 @@ def find_fitting_word(template):
     if VERBOSE:
         jltw.log('%d candidates'%len(candidates))
 
-    word, fit = random.choice(candidates)
+    word, fit = RNG.choice(candidates)
     if VERBOSE:
         jltw.log(word, fit)
     return word, fit
@@ -87,7 +95,7 @@ def fill_junk(grid):
     for row in xrange(GRID_SIZE):
         for col in xrange(GRID_SIZE):
             if grid[row][col] == ' ':
-                grid[row][col] = chr(random.randint(65,90))
+                grid[row][col] = chr(RNG.randint(65,90))
 
 def make_grid():
     words = set()
@@ -102,12 +110,12 @@ def make_grid():
             a, b = MIN_WORDLEN-1, (GRID_SIZE*2)-MIN_WORDLEN-1
         for s in xrange(a, b):
             sa.append((d, s))
-    random.shuffle(sa)
+    RNG.shuffle(sa)
 
-    for i in range(0,random.randint(MIN_WORDS, MAX_WORDS)):
+    for i in range(0,RNG.randint(MIN_WORDS, MAX_WORDS)):
         direction, slicei = sa[i]
         # flip this slice?
-        if random.random() < .5:
+        if RNG.random() < .5:
             direction = (direction+4)%8
 
         sliceword = gridslice.cut_slice(grid, direction, slicei)
@@ -122,5 +130,6 @@ def make_grid():
         fill_grid(grid, direction, slicei, offset, word)
         words.add(word)
 
+    fill_junk(grid)
     return words, '\n'.join((''.join(row) for row in grid))
 
