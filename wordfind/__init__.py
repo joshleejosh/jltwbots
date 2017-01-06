@@ -17,8 +17,6 @@ def set_seed(seed):
     import random
     global RNG
     RNG = random.Random(seed)
-    if VERBOSE:
-        jltw.log('seed = [%d]'%seed)
 
 # ------------------------------------------------------------------ #
 

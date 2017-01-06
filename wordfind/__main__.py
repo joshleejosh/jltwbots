@@ -41,6 +41,7 @@ if __name__ == '__main__':
     wordfind.set_verbose(args.verbose)
     wordfind.set_seed(args.seed)
     wordfind.load_wordlists(args.wordlist, args.blacklist)
+    jltw.log('Seed [%d]'%args.seed)
 
     api = None
     if args.tweet:
