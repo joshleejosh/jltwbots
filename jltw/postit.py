@@ -73,7 +73,8 @@ def pick_from_dir(dir):
 
     vlog('rm %s'%note.filename)
     if not DRYRUN:
-        os.remove(note.filename)
+        if note.filename:
+            os.remove(note.filename)
 
     return note
 
@@ -130,6 +131,7 @@ def main(db, mdir, authfn):
         if note.media:
             with open(note.media, 'rb') as fp:
                 api.PostUpdate(note.text, media=fp)
+            os.remove(note.media)
         else:
             api.PostUpdate(note.text)
 
