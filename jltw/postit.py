@@ -2,7 +2,7 @@ import sys, os, glob, random, codecs, argparse, re
 import jltw
 
 """
-Pick a note from a database and post it.
+Pick a note from a database and post it to twitter.
 
 The database can either be:
     * A directory full of files, one note per file.
@@ -10,7 +10,7 @@ The database can either be:
 
 For the directory method, a note file can specify a couple of extra things:
     * An ID for sorting/MRU management
-    * A media file to attach to the post.
+    * A media file to attach to the post. (path to media is relative to the note)
 
 When a note is chosen and posted, it is removed from the database.
 
@@ -50,8 +50,12 @@ def note_from_file(fn):
             id = v.strip()
         if k.lower() == 'media':
             media = v.strip()
+            if not os.path.isabs(media):
+                media = os.path.abspath(os.path.join(os.path.dirname(fn), media));
         i += 1
-    text = ''.join(lines[i:])
+    text = ''.join(lines[i:]).strip()
+    if not id:
+        id = os.path.splitext(os.path.basename(fn))[0]
     return Note(id, text, media, fn)
 
 def pick_from_dir(dir):
@@ -131,7 +135,7 @@ def main(db, mdir, authfn):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('datadir',
+    parser.add_argument('database',
             help='Directory containing postit files, OR single file containing lines')
     parser.add_argument('mediadir',
             nargs='?',
@@ -164,7 +168,7 @@ if __name__ == '__main__':
     if args.randomize:
         RANDOMIZE = True
 
-    ddir, mdir, afn = check_paths(args.datadir, args.mediadir, args.tweet)
+    ddir, mdir, afn = check_paths(args.database, args.mediadir, args.tweet)
     if not ddir:
         exit(1)
 

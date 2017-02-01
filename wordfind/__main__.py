@@ -56,4 +56,3 @@ if __name__ == '__main__':
         tweet = formatter.format_text(words, filled, replace=True)
         api.PostUpdate(tweet, verify_status_length=False)
 
-
