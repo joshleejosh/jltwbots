@@ -70,12 +70,14 @@ def pick_from_dir(dir):
     if RANDOMIZE:
         i = random.randint(0, len(notes))
     note = notes[i]
+    del notes[i]
 
     vlog('rm %s'%note.filename)
     if not DRYRUN:
         if note.filename:
             os.remove(note.filename)
 
+    vlog('%d remaining'%len(notes))
     return note
 
 def pick_from_file(fn):
@@ -94,6 +96,7 @@ def pick_from_file(fn):
         with codecs.open(fn, 'w', encoding='utf-8') as fp:
             fp.write(''.join(lines))
 
+    vlog('%d remaining'%len(lines))
     return Note(line, line)
 
 # ######################################################## #
