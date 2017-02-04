@@ -19,7 +19,6 @@ def _html_test(words, solution, filled):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('wordlist')
-    parser.add_argument('blacklist')
     parser.add_argument('-t', '--tweet',
             dest='tweet',
             action='store',
@@ -40,7 +39,7 @@ if __name__ == '__main__':
 
     wordfind.set_verbose(args.verbose)
     wordfind.set_seed(args.seed)
-    wordfind.load_wordlists(args.wordlist, args.blacklist)
+    wordfind.load_wordlists(args.wordlist)
     jltw.log('Seed [%d]'%args.seed)
 
     api = None

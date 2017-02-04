@@ -21,18 +21,14 @@ def set_seed(seed):
 # ------------------------------------------------------------------ #
 
 WORDLIST = []
-BLACKLIST = []
-def load_wordlists(fn, bn):
-    global WORDLIST, BLACKLIST
+def load_wordlists(fn):
+    global WORDLIST
     if fn:
         with open(fn) as fp:
             WORDLIST = [line.strip()
                     for line in fp.readlines()
                     if len(line) >= MIN_WORDLEN+1 and len(line) <= MAX_WORDLEN+1
                     ]
-    if bn:
-        with open(bn) as fp:
-            BLACKLIST = [line.strip() for line in fp.readlines()]
 
 # ------------------------------------------------------------------ #
 
@@ -62,7 +58,6 @@ def _find_fitting_word(template):
 
     candidates = [(w, _word_fits(w,template)) for w in WORDLIST
             if len(w) == wordlen
-            and w not in BLACKLIST
             and _word_fits(w, template) != -1
             ]
     if len(candidates) == 0:
