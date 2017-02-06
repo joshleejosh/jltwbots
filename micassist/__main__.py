@@ -111,7 +111,7 @@ def micassist_main(credentials, grammarizer, shuffler, mru, numreplies, delay, a
         line = grammarizer.generate()
         jltw.log(line)
         if dotweet:
-            api.PostUpdate(line, in_reply_to_status_id=drop.id_str)
+            api.PostUpdate(line)
 
 # ######################################################## #
 
