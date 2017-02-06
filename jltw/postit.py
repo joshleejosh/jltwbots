@@ -68,7 +68,7 @@ def pick_from_dir(dir):
 
     i = 0
     if RANDOMIZE:
-        i = random.randint(0, len(notes))
+        i = random.randint(0, len(notes)-1)
     note = notes[i]
     del notes[i]
 
@@ -87,7 +87,7 @@ def pick_from_file(fn):
 
     i = 0
     if RANDOMIZE:
-        i = random.randint(0, len(lines))
+        i = random.randint(0, len(lines)-1)
     line = lines[i].strip()
     del lines[i]
     vlog(i, line)
