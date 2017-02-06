@@ -61,6 +61,7 @@ def find_micdrops(api, lastid):
 
 def make_reply(tweet, grammar):
     if VERBOSE:
+        jltw.log('----')
         jltw.log(tweet.id_str)
         jltw.log(tweet.created_at)
         jltw.log(tweet.user.screen_name)
@@ -99,6 +100,7 @@ def micassist_main(credentials, grammarizer, shuffler, mru, numreplies, delay, a
                 time.sleep(delay)
 
             if VERBOSE:
+                jltw.log('----')
                 if ntweets < numreplies:
                     jltw.log('Exhausted tweets at %d/%d'%(ntweets, numreplies))
                 else:
