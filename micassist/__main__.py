@@ -68,36 +68,50 @@ def make_reply(tweet, grammar):
     rv = '@' + tweet.user.screen_name + ' ' + grammar.generate()
     return rv
 
-def micassist_main(credentials, grammarizer, shuffler, mru, numreplies, delay, dotweet):
+def micassist_main(credentials, grammarizer, shuffler, mru, numreplies, delay, alsobare, dotweet):
     lastid = None
     if len(mru) > 0:
         lastid = mru[-1]
 
     api = jltw.open_twitter(credentials)
-    drops = find_micdrops(api, lastid)
 
-    if len(drops) == 0:
-        if VERBOSE:
-            jltw.log(u'no tweets found to reply to')
+    if numreplies > 0:
+        drops = find_micdrops(api, lastid)
+        ndrops = len(drops)
 
-    else:
-        ntweets = 0
-        while ntweets < numreplies and len(drops) > 0:
-            drop = random.choice(drops)
-            drops.remove(drop)
-            if drop.id_str in mru:
-                continue
-            mru.add(drop.id_str)
-            line = make_reply(drop, gizer)
-            jltw.log(line)
-            if dotweet:
-                api.PostUpdate(line, in_reply_to_status_id=drop.id_str)
-            ntweets += 1
-            time.sleep(delay)
-
-        if ntweets < numreplies:
+        if len(drops) == 0:
             if VERBOSE:
-                jltw.log('Exhausted tweets at %d/%d'%(ntweets, numreplies))
+                jltw.log(u'no tweets found to reply to')
+
+        else:
+            ntweets = 0
+            while ntweets < numreplies and len(drops) > 0:
+                drop = random.choice(drops)
+                drops.remove(drop)
+                if drop.id_str in mru:
+                    continue
+                mru.add(drop.id_str)
+                line = make_reply(drop, gizer)
+                jltw.log(line)
+                if dotweet:
+                    api.PostUpdate(line, in_reply_to_status_id=drop.id_str)
+                ntweets += 1
+                time.sleep(delay)
+
+            if VERBOSE:
+                if ntweets < numreplies:
+                    jltw.log('Exhausted tweets at %d/%d'%(ntweets, numreplies))
+                else:
+                    jltw.log('Replied to %d/%d'%(ntweets, ndrops))
+
+    bchance = random.random()
+    if VERBOSE:
+        jltw.log(bchance)
+    if bchance < alsobare:
+        line = grammarizer.generate()
+        jltw.log(line)
+        if dotweet:
+            api.PostUpdate(line, in_reply_to_status_id=drop.id_str)
 
 # ######################################################## #
 
@@ -111,7 +125,7 @@ if __name__ == '__main__':
             dest='mrufile',
             action='store',
             default='',
-            help='file containing MRU state for tweets replied to')
+            help='file containing MRU list for tweets replied to')
     parser.add_argument('-s', '--shufflefile',
             dest='shuffile',
             action='store',
@@ -129,6 +143,12 @@ if __name__ == '__main__':
             type=int,
             default=DEFAULT_DELAY,
             help='time between tweets')
+    parser.add_argument('-b', '--barechance',
+            dest='bare',
+            action='store',
+            type=float,
+            default=0,
+            help='odds of also posting a non-reply tweet')
     parser.add_argument('-t', '--tweet',
             dest='tweet',
             action='store_true',
@@ -137,8 +157,8 @@ if __name__ == '__main__':
             dest='verbose',
             action='store_true',
             help='print debug spam')
-    parser.add_argument('-g', '--grammar-only',
-            dest='grammar_only',
+    parser.add_argument('-g', '--grammar-test',
+            dest='grammar_test',
             action='store_true',
             help='just test the grammar')
     args = parser.parse_args()
@@ -157,11 +177,11 @@ if __name__ == '__main__':
     gizer = jltw.grammarizer.Grammarizer(GRAMMAR, shuffler)
     gizer.verbose = args.verbose
 
-    if args.grammar_only:
+    if args.grammar_test:
         for _ in xrange(args.numreplies):
             print gizer.generate()
     else:
-        micassist_main(args.credentials, gizer, shuffler, mru, args.numreplies, args.delay, args.tweet)
+        micassist_main(args.credentials, gizer, shuffler, mru, args.numreplies, args.delay, args.bare, args.tweet)
 
     shuffler.save()
     mru.save()
