@@ -35,16 +35,16 @@ chance of a blank (instead of 1/len(list)). This can be disabled by setting the
 `allowOptional` property to False.
 
 If some tokens in a choice list end with '*' and a number (e.g., `[ '{foo*2}',
-'{bar*3}', '{baz*1}' ]`), Those tokens will have added (or subtracted) weight
-when picking. This is achieved by stripping off the multiplier and duplicating
-the tokens. (This example expands to `[ '{foo}', '{foo}', '{bar}', '{bar}',
-'{bar}', '{baz}' ]`)
+'{bar*3}', '{baz*1}' ]`), Those tokens will have added weight when picking.
+This is achieved by stripping off the multiplier and duplicating the tokens.
+(This example expands to `[ '{foo}', '{foo}', '{bar}', '{bar}', '{bar}',
+'{baz}' ]`)
 
 TODO: Throw this whole thing away and use Tracery
 
 """
 
-import os, random, re, copy, unicodedata
+import os, random, re, copy, unicodedata, codecs, json
 import jltw, jltw.shuffler
 
 KEY_ROOT = "*"
@@ -296,7 +296,8 @@ if __name__ == '__main__':
 
     api = None
     if args.tweet:
-        api = jltw.open_twitter(args.tweet)
+        import jltw.twapi
+        api = jltw.twapi.open_twitter(args.tweet)
         args.numlines = 1
 
     for i in xrange(args.numlines):

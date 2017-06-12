@@ -1,10 +1,10 @@
 # Tester is a read-only script to help make sure we can communicate with twitter.
 
 import argparse
-import jltw
+import jltw, jltw.twapi
 
 def test_me(fn, q):
-    api = jltw.open_twitter(fn)
+    api = jltw.twapi.open_twitter(fn)
     #tweets = api.GetUserTimeline()
     #jltw.log(api.VerifyCredentials().screen_name)
     tweets = api.GetSearch('q='+q, count=200)

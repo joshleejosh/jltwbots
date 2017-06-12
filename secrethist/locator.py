@@ -73,7 +73,7 @@ def dump_woeids(api):
             jltw.log(woe['name'], woe['country'], woe['woeid'])
 
 if __name__ == '__main__':
-    import sys
-    api = jltw.open_twitter(sys.argv[1])
+    import sys, jltw.twapi
+    api = jltw.twapi.open_twitter(sys.argv[1])
     dump_woeids(api)
 

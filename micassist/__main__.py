@@ -1,6 +1,6 @@
 # encoding: utf-8
 import random, time
-import jltw, jltw.shuffler, jltw.mru, jltw.grammarizer
+import jltw, jltw.twapi, jltw.shuffler, jltw.mru, jltw.grammarizer
 
 VERBOSE = False
 SEARCH_STRING = 'mic drop'
@@ -74,7 +74,7 @@ def micassist_main(credentials, grammarizer, shuffler, mru, numreplies, delay, a
     if len(mru) > 0:
         lastid = mru[-1]
 
-    api = jltw.open_twitter(credentials)
+    api = jltw.twapi.open_twitter(credentials)
 
     if numreplies > 0:
         drops = find_micdrops(api, lastid)

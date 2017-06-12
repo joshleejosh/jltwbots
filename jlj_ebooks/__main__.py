@@ -1,7 +1,7 @@
 # jlj_ebooks takes tweet data from a JSON source file and generates gibberish using markov chains.
 
 import argparse, json, random, xml.sax.saxutils
-import jltw, jltw.markovator
+import jltw, jltw.twapi, jltw.markovator
 
 CORPUS = []
 
@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
     api = None
     if args.tweet:
-        api = jltw.open_twitter(args.authfile)
+        api = jltw.twapi.open_twitter(args.authfile)
         args.num_tweets = 1
 
     for i in xrange(args.num_tweets):

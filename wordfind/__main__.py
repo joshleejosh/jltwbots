@@ -44,7 +44,8 @@ if __name__ == '__main__':
 
     api = None
     if args.tweet:
-        api = jltw.open_twitter(args.tweet)
+        import jltw.twapi
+        api = jltw.twapi.open_twitter(args.tweet)
 
     words, solution, filled = wordfind.make_grid()
     text = formatter.format_text(words, solution, filled)

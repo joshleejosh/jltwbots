@@ -130,7 +130,8 @@ def main(db, mdir, authfn):
 
     vlog(note.text, force=True)
     if authfn and not DRYRUN:
-        api = jltw.open_twitter(authfn)
+        import jltw.twapi
+        api = jltw.twapi.open_twitter(authfn)
         if note.media:
             with open(note.media, 'rb') as fp:
                 api.PostUpdate(note.text, media=fp)

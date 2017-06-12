@@ -8,6 +8,7 @@ class Shuffler:
     def __init__(self):
         self.filename = ''
         self.state = {}
+        self.rng = random.Random()
 
     def load(self, fn):
         self.filename = fn
@@ -48,15 +49,80 @@ class Shuffler:
                 rv = a[v]
             else:
                 #jltw.log('fail: not enough elements for %d in %s (%d: [%s])'%(i, k, len(a), a))
-                rv = random.choice(a)
+                rv = self.rng.choice(a)
         else:
             #jltw.log(u'¯\_(ツ)_/¯')
-            rv = random.choice(a)
+            rv = self.rng.choice(a)
         return rv
 
     def _refresh(self, k, a):
         #jltw.log('refresh %s'%k)
-        sa = range(len(a))
-        random.shuffle(sa)
+        sa = list(range(len(a)))
+        self.rng.shuffle(sa)
         self.state[k] = sa
+
+
+if __name__ == '__main__':
+    import unittest, tempfile
+    class ShufflerTest(unittest.TestCase):
+        def setUp(self):
+            self.fd, self.fn = tempfile.mkstemp()
+            with open(self.fn, 'w') as fp:
+                fp.write('{}')
+        def tearDown(self):
+            try:
+                os.close(self.fd)
+            except OSError:
+                pass
+            try:
+                os.remove(self.fn)
+            except OSError:
+                pass
+
+        def test_basic(self):
+            k = '  fOo  '
+            a = ['b', -1, 'Q', 4.342]
+            s = Shuffler()
+            o1 = []
+            o1.append(s.choice(k, a))
+            self.assertIn(k, s.state)
+            self.assertEqual(len(s.state[k]), 3) # first item has already been popped off
+            self.assertNotIn(o1[0], s.state[k])
+            o1.append(s.choice(k, a))
+            o1.append(s.choice(k, a))
+            o1.append(s.choice(k, a))
+            self.assertEqual(len(s.state[k]), 0)
+            self.assertItemsEqual(a, o1)
+            o2 = []
+            o2.append(s.choice(k, a))
+            o2.append(s.choice(k, a))
+            o2.append(s.choice(k, a))
+            o2.append(s.choice(k, a))
+            self.assertItemsEqual(a, o2)
+
+        def test_file(self):
+            s = Shuffler()
+            s.rng = random.Random(91867967548)
+            s.load(self.fn)
+            a = [-452.611, 97, 6.28]
+            b = ['You', 'mE', '  they  ', 'WE', 'us']
+            self.assertEqual(s.choice('j', a), a[0])
+            self.assertEqual(s.choice('k', b), b[4])
+            s.save()
+            with open(self.fn) as fp:
+                j = json.load(fp)
+                self.assertEqual(j['j'], [2, 1])
+                self.assertEqual(j['k'], [3, 2, 0, 1])
+
+            t = Shuffler()
+            t.load(self.fn)
+            self.assertEqual(t.choice('j', a), a[2])
+            self.assertEqual(t.choice('k', b), b[3])
+            t.save()
+            with open(self.fn) as fp:
+                j = json.load(fp)
+                self.assertEqual(j['j'], [1])
+                self.assertEqual(j['k'], [2, 0, 1])
+
+    unittest.main(verbosity=2)
 

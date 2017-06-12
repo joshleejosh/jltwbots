@@ -3,7 +3,7 @@
 import argparse, time
 import random
 from collections import defaultdict
-import jltw
+import jltw, jltw.twapi
 import locator, trendor, searcher, musher, htmarkov
 
 NUM_SAMPLE_WOES = 7
@@ -99,7 +99,7 @@ def find_params(api, trend=None, woeid=None):
 def main(args):
     trendor.load_trend_mru()
     locator.load_location_mru()
-    api = jltw.open_twitter(args.authfile)
+    api = jltw.twapi.open_twitter(args.authfile)
     #jltw.log(api.VerifyCredentials().screen_name)
     #time.sleep(1)
 
