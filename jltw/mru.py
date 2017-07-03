@@ -67,7 +67,7 @@ class MRU(object):
             with codecs.open(self.filename, encoding='utf-8') as fp:
                 self.deserialize(fp.read())
         else:
-            with codecs.open(self.filename, 'w', encoding='utf-8'):
+            with codecs.open(self.filename, 'w', encoding='utf-8') as fp:
                 fp.write('')
 
     def save(self, newid=None):
@@ -80,17 +80,13 @@ class MRU(object):
             fp.write(s)
 
 if __name__ == '__main__':
-    import unittest, tempfile
+    import unittest, tempfile, shutil
     class MRUTest(unittest.TestCase):
         def setUp(self):
-            self.fd, self.fn = tempfile.mkstemp()
+            self.tempdir = tempfile.mkdtemp()
         def tearDown(self):
             try:
-                os.close(self.fd)
-            except OSError:
-                pass
-            try:
-                os.remove(self.fn)
+                shutil.rmtree(self.tempdir)
             except OSError:
                 pass
 
@@ -133,30 +129,45 @@ if __name__ == '__main__':
             self.assertEqual(m.serialize(), u'^_^MRULEN=2\n8\n9\n')
 
         def test_file(self):
-            m = MRU(self.fn)
-            self.assertTrue(os.path.exists(self.fn))
-            self.assertEqual(os.path.getsize(self.fn), 0)
+            # create an empty file
+            fn = os.path.join(self.tempdir, 't1')
+            with open(fn, 'w') as fp:
+                fp.write('')
+            self.assertTrue(os.path.exists(fn))
+
+            m = MRU(fn)
+            self.assertEqual(os.path.getsize(fn), 0)
             m.resize(4)
 
             m.add('hi there')
             m.add(32.6)
             m.add(14)
             m.save()
-            with open(self.fn) as fp:
+            with open(fn) as fp:
                 s = fp.read()
             self.assertEqual(s, m.serialize())
 
             m.add(89576)
             m.add('whatever')
             m.save(62.73)
-            with open(self.fn) as fp:
+            with open(fn) as fp:
                 s = fp.read()
             self.assertEqual(s, m.serialize())
             self.assertEqual(s, u'^_^MRULEN=4\n14\n89576\nwhatever\n62.73\n')
 
-            n = MRU(self.fn)
+            n = MRU(fn)
             n.load()
             self.assertEqual(n.serialize(), u'^_^MRULEN=4\n14\n89576\nwhatever\n62.73\n')
+
+        def test_newfile(self):
+            # If we try to load a file that doesn't exists, create it.
+            fn = os.path.join(self.tempdir, 't2')
+            self.assertFalse(os.path.exists(fn))
+            m = MRU()
+            m.filename = fn
+            m.load()
+            self.assertTrue(os.path.exists(fn))
+            self.assertEqual(os.path.getsize(fn), 0)
 
     unittest.main(verbosity=2)
 
