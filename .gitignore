@@ -1,6 +1,7 @@
 
 *.py[cod]
 **/*.mru
+**/*.log
 
 botenv
 
