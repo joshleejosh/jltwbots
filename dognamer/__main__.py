@@ -95,7 +95,7 @@ def make_replies(api, mark, mrutweets, mrunames, numreplies, numnames, delay, do
             jltw.log(body)
 
             if dotweet:
-                api.PostUpdate(line, in_reply_to_status_id=mention.id_str)
+                api.PostUpdate(body, in_reply_to_status_id=mention.id_str)
             nmentions += 1
             time.sleep(delay)
 
