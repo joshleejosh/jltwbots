@@ -7,24 +7,20 @@ import markovator
 
 VERBOSE = False
 DEFAULT_DELAY = 10 # seconds
-
 DOGNAMES_FN = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'botdata', 'dognames.txt'))
 MORDER = 4
-
 PREFIX='Good names for a good dog:\n'
-
 
 # ######################################################## #
 
 def read_mentions(api, lastid):
     tweets = api.GetMentions(since_id=lastid, count=100)
     if VERBOSE:
-        jltw.log('found', len(tweets))
+        jltw.log('Found %d mentions'%len(tweets))
     return tweets
 
-# Only reply to tweets that mention dogs or post a picture (of a dog, presumably)
+# TODO: Only reply to tweets that mention dogs or post a picture (of a dog, presumably)
 def should_reply(tweet):
-    print(tweet.media)
     return True
 
 def make_markovator():
@@ -74,10 +70,6 @@ def make_replies(api, mark, mrutweets, mrunames, numreplies, numnames, delay, do
 
     mentions = read_mentions(api, lastid)
     nmentions = len(mentions)
-    if VERBOSE:
-        jltw.log(u'found [%d] mentions'%nmentions)
-        for m in mentions:
-            jltw.log(u'[%s]'%m.text)
 
     if len(mentions) > 0:
         nmentions = 0
@@ -107,7 +99,7 @@ def make_replies(api, mark, mrutweets, mrunames, numreplies, numnames, delay, do
 # ######################################################## #
 
 if __name__ == '__main__':
-    import argparse, codecs, json
+    import argparse, codecs, json, traceback, datetime
     parser = argparse.ArgumentParser()
     parser.add_argument('credentials',
             type=str,
@@ -186,7 +178,6 @@ if __name__ == '__main__':
         mrunames.save()
 
     except Exception as e:
-        import traceback, datetime
         fn = args.errorlog
         if not fn.startswith('/'):
             fn = os.path.join(os.path.dirname(__file__), args.errorlog)
