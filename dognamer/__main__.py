@@ -6,7 +6,8 @@ import jltw, jltw.twapi, jltw.shuffler, jltw.mru
 import markovator
 
 VERBOSE = False
-DEFAULT_DELAY = 10 # seconds
+DEFAULT_DELAY = 3 # seconds
+DEFAULT_NUM_NAMES = 3
 DOGNAMES_FN = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'botdata', 'dognames.txt'))
 MORDER = 4
 PREFIX='Good names for a good dog:\n'
@@ -19,9 +20,15 @@ def read_mentions(api, lastid):
         jltw.log('Found %d mentions'%len(tweets))
     return tweets
 
-# TODO: Only reply to tweets that mention dogs or post a picture (of a dog, presumably)
 def should_reply(tweet):
-    return True
+    # does the tweet contain a picture? (of a dog, presumably)
+    if tweet.media:
+        return True
+    # does the tweet contain the word 'DOG'? (aside from mentioning this bot)
+    text = tweet.text.upper().replace('@DOGNAMERBOT', '')
+    if text.find('DOG') != -1:
+        return True
+    return False
 
 def make_markovator():
     rv = None
@@ -82,6 +89,8 @@ def make_replies(api, mark, mrutweets, mrunames, numreplies, numnames, delay, do
             if not should_reply(mention):
                 continue
 
+            if VERBOSE:
+                jltw.log('Reply to [%s]'%mention.text)
             body = make_body(mark, mrunames, numnames)
             body = '@%s %s'%(mention.user.screen_name, body)
             jltw.log(body)
@@ -114,7 +123,7 @@ if __name__ == '__main__':
             dest='numnames',
             action='store',
             type=int,
-            default=1,
+            default=DEFAULT_NUM_NAMES,
             help='number of names generated')
     parser.add_argument('--delay',
             dest='delay',
