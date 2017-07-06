@@ -1,7 +1,7 @@
 # encoding: utf-8
 # dognamer replies to tweets with a name for your dog.
 
-import random, time, os.path
+import random, time, os.path, codecs
 import jltw, jltw.twapi, jltw.shuffler, jltw.mru
 import markovator
 
@@ -11,6 +11,10 @@ DEFAULT_NUM_NAMES = 3
 DOGNAMES_FN = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'botdata', 'dognames.txt'))
 MORDER = 4
 PREFIX='Good names for a good dog:\n'
+
+REPLY_WORDS = (
+        u'DOG', u'NAME', u'MORE', u'ANOTHER', u'AGAIN',
+        )
 
 # ######################################################## #
 
@@ -26,13 +30,16 @@ def should_reply(tweet):
         return True
     # does the tweet contain the word 'DOG'? (aside from mentioning this bot)
     text = tweet.text.upper().replace('@DOGNAMERBOT', '')
-    if text.find('DOG') != -1:
-        return True
+    for w in REPLY_WORDS:
+        if text.find(w) != -1:
+            return True
+    if VERBOSE:
+        jltw.log('Do not reply to [%s]'%tweet.text)
     return False
 
 def make_markovator():
     rv = None
-    with open(DOGNAMES_FN) as fp:
+    with codecs.open(DOGNAMES_FN, encoding='utf-8') as fp:
         # read the data file: one item per line, each line split
         # into a list of letters (rather than words)
         data = [list(s.strip()) for s in fp.readlines()]
@@ -41,10 +48,10 @@ def make_markovator():
 
 def make_body(mark, mrunames, numnames):
     def ffilter(w):
-        w = ''.join(w)
+        w = u''.join(w)
         u = w.upper()
         for n in mark.corpus:
-            n = ''.join(n).upper()
+            n = u''.join(n).upper()
             if n.find(u) != -1:
                 return False
         if w in mrunames:
@@ -54,11 +61,11 @@ def make_body(mark, mrunames, numnames):
     names = []
     for _ in range(numnames):
         n = mark.generate(filter=ffilter)
-        n = ''.join(n)
+        n = u''.join(n)
         names.append(n)
         mrunames.add(n)
     text = PREFIX
-    text += '\n'.join(['%d. %s'%(i+1,n) for i,n in enumerate(names)])
+    text += u'\n'.join(['%d. %s'%(i+1,n) for i,n in enumerate(names)])
     return text
 
 # ######################################################## #
@@ -92,7 +99,7 @@ def make_replies(api, mark, mrutweets, mrunames, numreplies, numnames, delay, do
             if VERBOSE:
                 jltw.log('Reply to [%s]'%mention.text)
             body = make_body(mark, mrunames, numnames)
-            body = '@%s %s'%(mention.user.screen_name, body)
+            body = u'@%s %s'%(mention.user.screen_name, body)
             jltw.log(body)
 
             if dotweet:
