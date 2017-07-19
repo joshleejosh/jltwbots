@@ -45,7 +45,7 @@ TODO: Throw this whole thing away and use Tracery
 """
 
 import os, random, re, copy, unicodedata, codecs, json
-import jltw, jltw.shuffler
+import jltw
 
 KEY_ROOT = "*"
 KEY_INCLUDE = "*include"
@@ -254,7 +254,7 @@ TESTGRAMMAR = {
 }
 
 if __name__ == '__main__':
-    import argparse, codecs, json, shuffler
+    import argparse, codecs, json, shufflator
     parser = argparse.ArgumentParser()
     parser.add_argument('grammarfile',
             type=str,
@@ -287,7 +287,7 @@ if __name__ == '__main__':
         with codecs.open(args.grammarfile, encoding='utf-8') as fp:
             grammar = json.load(fp)
 
-    shuffler = jltw.shuffler.Shuffler()
+    shuffler = shufflator.Shufflator()
     if args.shuffile:
         shuffler.load(args.shuffile)
 
