@@ -2,8 +2,9 @@
 # dognamer replies to tweets with a name for your dog.
 
 import random, time, os.path, codecs
-import jltw, jltw.twapi, jltw.shuffler, jltw.mru
+import jltw, jltw.twapi
 import markovator
+import mrubuddy
 
 VERBOSE = False
 DEFAULT_DELAY = 3 # seconds
@@ -169,12 +170,12 @@ if __name__ == '__main__':
     VERBOSE = args.verbose
 
     try:
-        mrutweets = jltw.mru.MRU()
+        mrutweets = mrubuddy.MRU()
         if args.mrutweets:
             mrutweets.filename = args.mrutweets
         mrutweets.load()
 
-        mrunames = jltw.mru.MRU()
+        mrunames = mrubuddy.MRU()
         if args.mrunames:
             mrunames.filename = args.mrunames
         mrunames.load()

@@ -1,5 +1,6 @@
 import os.path, random, time
 import jltw
+import mrubuddy
 
 WDIR = os.path.dirname(os.path.realpath(__file__))
 MRU_FN = os.path.join(WDIR, 'locations.mru')
@@ -29,7 +30,7 @@ WOEIDS={}
 mru = None
 def load_location_mru():
     global mru
-    mru = jltw.mru.MRU(MRU_FN)
+    mru = mrubuddy.MRU(MRU_FN)
     mru.load()
 def save_location_mru(newid):
     mru.save(newid)

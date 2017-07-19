@@ -1,5 +1,6 @@
 import os.path, random, time
-import jltw.mru
+import jltw
+import mrubuddy
 import locator, searcher
 
 WDIR = os.path.dirname(os.path.realpath(__file__))
@@ -8,7 +9,7 @@ MRU_FN = os.path.join(WDIR, 'trends.mru')
 mru = None
 def load_trend_mru():
     global mru
-    mru = jltw.mru.MRU(MRU_FN)
+    mru = mrubuddy.MRU(MRU_FN)
     mru.load()
 def save_trend_mru(newword):
     mru.save(newword)

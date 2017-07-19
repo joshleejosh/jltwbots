@@ -1,7 +1,7 @@
 # encoding: utf-8
 import os, unittest, tempfile, codecs, collections
 import numpy, math
-import jltw.mru
+import jltw
 from jltw.grammarizer import Grammarizer
 
 class GrammarizerTest(unittest.TestCase):

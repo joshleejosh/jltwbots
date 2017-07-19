@@ -1,6 +1,7 @@
 import os.path, random, unicodedata, codecs
 from collections import defaultdict
-import jltw.mru
+import jltw
+import mrubuddy
 
 WDIR = os.path.dirname(os.path.realpath(__file__))
 MRU_FN = os.path.join(WDIR, 'topics.mru')
@@ -18,7 +19,7 @@ def musher_init():
     global mru
     load_stopwords()
     load_blacklist()
-    mru = jltw.mru.MRU(MRU_FN)
+    mru = mrubuddy.MRU(MRU_FN)
     mru.load()
 
 def load_file(fn):
