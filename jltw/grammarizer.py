@@ -254,7 +254,7 @@ TESTGRAMMAR = {
 }
 
 if __name__ == '__main__':
-    import argparse, codecs, json, shufflator
+    import argparse, codecs, json, shufflebuddy
     parser = argparse.ArgumentParser()
     parser.add_argument('grammarfile',
             type=str,
@@ -287,7 +287,7 @@ if __name__ == '__main__':
         with codecs.open(args.grammarfile, encoding='utf-8') as fp:
             grammar = json.load(fp)
 
-    shuffler = shufflator.Shufflator()
+    shuffler = shufflebuddy.ShuffleBuddy()
     if args.shuffile:
         shuffler.load(args.shuffile)
 

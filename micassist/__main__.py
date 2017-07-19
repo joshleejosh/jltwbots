@@ -1,7 +1,7 @@
 # encoding: utf-8
 import random, time
 import jltw, jltw.twapi, jltw.mru, jltw.grammarizer
-import shufflator
+import shufflebuddy
 
 VERBOSE = False
 SEARCH_STRING = 'mic drop'
@@ -173,7 +173,7 @@ if __name__ == '__main__':
         mru.filename = args.mrufile
     mru.load()
 
-    shuffler = shufflator.Shufflator()
+    shuffler = shufflebuddy.ShuffleBuddy()
     if args.shuffile:
         shuffler.load(args.shuffile)
 
