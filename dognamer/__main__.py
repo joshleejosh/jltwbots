@@ -10,7 +10,7 @@ VERBOSE = False
 DEFAULT_DELAY = 3 # seconds
 DEFAULT_NUM_NAMES = 3
 DOGNAMES_FN = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'botdata', 'dognames.txt'))
-MORDER = 4
+MORDER = 5
 PREFIX='Good names for a good dog:\n'
 
 REPLY_WORDS = (
