@@ -11,6 +11,7 @@ DEFAULT_DELAY = 3 # seconds
 DEFAULT_NUM_NAMES = 3
 DOGNAMES_FN = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'botdata', 'dognames.txt'))
 MORDER = 5
+RETRIES = 40
 PREFIX='Good names for a good dog:\n'
 
 REPLY_WORDS = (
@@ -44,7 +45,7 @@ def make_markovator():
         # read the data file: one item per line, each line split
         # into a list of letters (rather than words)
         data = [list(s.strip()) for s in fp.readlines()]
-        rv = markovator.Markovator(data, order=MORDER)
+        rv = markovator.Markovator(data, order=MORDER, verbose=False)
     return rv
 
 def make_body(mark, mrunames, numnames):
@@ -61,7 +62,7 @@ def make_body(mark, mrunames, numnames):
 
     names = []
     for _ in range(numnames):
-        n = mark.generate(filter=ffilter)
+        n = mark.generate(filter=ffilter, retries=RETRIES)
         n = u''.join(n)
         names.append(n)
         mrunames.add(n)
