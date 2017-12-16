@@ -2,8 +2,8 @@
 import jltw, gridslice
 
 GRID_SIZE = 8
-MIN_WORDS = 4
-MAX_WORDS = 6
+MIN_WORDS = 6
+MAX_WORDS = 8
 MIN_WORDLEN = 4
 MAX_WORDLEN = 7
 
